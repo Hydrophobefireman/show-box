@@ -96,7 +96,7 @@ def get_(url, v=True, n=1, season=0):
                        (ret.url, dict(ret.cookies))], v)
             to_screen(["[debug]Recieved Data:"], v)
             dict_print(res, v)
-            data.append(res.get("data"))
+            data.append(res.get("data").replace("http:", "https:"))
         while len(data) > 3:
             p_print(data)
             dt_n = input(
@@ -105,6 +105,17 @@ def get_(url, v=True, n=1, season=0):
         if len(data) < 3:
             nones = [None]*(3-len(data))
             data += nones
+        if all(s is None for s in data):
+            data = []
+            print("no urls for episode:", i)
+            a = input("Enter URL1:")
+            b = input("Enter URL2:")
+            if len(b) < 5:
+                b = None
+            c = input("Enter URL2:")
+            if len(c) < 5:
+                c = None
+            data = [a, b, c]
         episode_data = {**episode_data, i: data}
         to_screen(['[debug]Episode Data'], v)
         dict_print(episode_data, v)
@@ -112,8 +123,6 @@ def get_(url, v=True, n=1, season=0):
     yn = 'y'
     if yn == 'y':
         print('[info]Adding to database:')
-        print("[info]sleep to prevent rate limits")
-        sleep(random.randint(3, 9))
         print(dbmanage.add_to_db(base_template))
     else:
         print("[info]Returning Values Only")
@@ -150,14 +159,18 @@ if __name__ == "__main__":
 
     def url_config(verb):
         url = input("Enter URL:")
-        season = re.search(r"-\s*?S(?P<s>\d+)", url, re.IGNORECASE).group("s")
+        try:
+            season = re.search(
+                r"-\s*?S(?P<s>\d+", url, re.IGNORECASE).group("s")
+        except:
+            season = 0
         if verb == 'v':
             verb = True
         else:
             verb = False
             print("[info]Verbosity set to silent")
         n = int(input("Start From Episode Number:"))
-        s = input("Season Number:,Guess:%s\n" % season)
+        s = input("Season Number-Guess:%s\n" % season)
         return (url, verb, n, s)
     datas = []
     for i in range(1, number_+1):

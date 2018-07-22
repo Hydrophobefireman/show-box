@@ -21,6 +21,7 @@
     <title>Watch {{movie|safe}} on TV Series-get</title>
     <style>
         .episode-lists {
+            width: 100px;
             outline: none;
             padding: 7px 12px 5px 12px;
             text-align: center;
@@ -296,9 +297,9 @@
                 console.log(data);
                 document.getElementById("custom-dl-box").style.display = 'block';
                 data = JSON.parse(data);
-                var url = data['url'];
-                var alt1 = data['alt1'];
-                var alt2 = data['alt2'];
+                var url = data['url'].replace("http:", "https:");
+                var alt1 = data['alt1'].replace("http:", "https:");
+                var alt2 = data['alt2'].replace("http:", "https:");
                 var btns1 = document.getElementById("source1");
                 var btns2 = document.getElementById("source2");
                 var btns3 = document.getElementById("source3");
