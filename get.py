@@ -314,8 +314,10 @@ def add_():
         col = tvData(title, thumb, season, episodes)
         db.session.add(col)
         db.session.commit()
+        print(col)
         return str(col)
     except Exception as e:
+        print(e)
         return "Malformed Input"+str(e)
 
 
