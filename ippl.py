@@ -96,7 +96,7 @@ def get_(url, v=True, n=1, season=0):
                        (ret.url, dict(ret.cookies))], v)
             to_screen(["[debug]Recieved Data:"], v)
             dict_print(res, v)
-            data.append(res.get("data").replace("http:", "https:"))
+            data.append(res.get("data").replace("http://", "https://"))
         while len(data) > 3:
             p_print(data)
             dt_n = input(

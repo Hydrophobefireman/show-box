@@ -306,8 +306,12 @@ def add_():
         data = request.form['data']
         if request.form['pw'] != os.environ.get("_pass_"):
             return "No"
-        data = json.loads(data)
-        col = movieData(*data['lists'])
+        data = json.loads(data)['lists']
+        title = data['title']
+        thumb = data['thumb']
+        season = data['season']
+        episodes = json.loads(data['episodes'])
+        col = tvData(title, thumb, season, episodes)
         db.session.add(col)
         db.session.commit()
         return str(col)
