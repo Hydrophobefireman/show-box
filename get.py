@@ -303,10 +303,10 @@ def abckdv():
 @app.route("/sec/add/", methods=['POST'])
 def add_():
     try:
-        data = request.form['data']
+        data = request.form['lists']
         if request.form['pw'] != os.environ.get("_pass_"):
             return "No"
-        data = json.loads(data)['lists']
+        data = json.loads(data)
         title = data['title']
         thumb = data['thumb']
         season = data['season']
