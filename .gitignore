@@ -24,7 +24,20 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
+#MinifiedJS
+static/jsbin/
+#CUSTOM
+js-obfs.js
+js-player.obfs.js
+js-obfuscated.js
+_js-obfuscated.js
+*.obfuscated
+.obfuscated
+.cloudinary
+api.py
+*.cloudinary
+*.dbinfo_
+.dbinfo_
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.

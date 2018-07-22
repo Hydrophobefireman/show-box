@@ -1,0 +1,105 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta name="keywords" content="report,TV Series" />
+    <meta name='og:description' content="report dead links for {{title}}" />
+    <meta name='description' content="report dead links for {{title}}" />
+    <meta name='og:image' content="{{thumb|safe}}" />
+    <meta name='og:title' content="report dead links for {{title}}" />
+    <meta name='og:site_name' content="Shows-Box" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <title>report dead links for {{title}}</title>
+    <style>
+        .submit-button {
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+            padding: 8px;
+            border: none;
+            outline: none;
+            background: #3367d6;
+            color: white;
+            text-transform: uppercase;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            margin-top: 20px;
+        }
+        
+        .links {
+            text-decoration: none;
+            color: #fff;
+        }
+        
+        .links:hover {
+            border-bottom: 1px solid #e3e3e3;
+        }
+        
+        body {
+            font-family: 'Open Sans', 'sans-serif';
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div style='margin-left: auto;margin-right: auto;text-align: center;'>
+        <div>
+            <div style="margin-left:auto;margin-right:auto;padding: 8px;overflow: hidden;background: #333;text-align: center">
+                <a class=links href='/'><span class='h-link'>Home Page</span></a>
+                <a class=links id='all' href=/all><span class='h-link'>All TV Series</span></a>
+            </div>
+            <div id=report-box></div>
+            <button class=submit-button id=sbmit-report style=margin-top:15px;>Submit Report</button>
+            <div id=sub-success-error style=margin:20px;>
+
+            </div> {% compress 'js' %}
+            <script>
+                var repo = document.getElementById("report-box");
+                var compat_url = window["URL"] || window["webkitURL"];
+                var req = new Request("{{thumb|safe}}");
+                var img = document.createElement("img");
+                img.style.height = '200px';
+                img.style.width = '150px;'
+                fetch(req)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        img.src = compat_url.createObjectURL(blob);
+                    });
+                img.onload = function() {
+                    compat_url.revokeObjectURL(this.src)
+                }
+                repo.appendChild(img);
+                var repo = document.getElementById("report-box")
+                repo.appendChild(img);
+                var txtel = document.createElement("div");
+                txtel.innerHTML = "Report for movie {{title}}?"
+                repo.appendChild(txtel);
+
+                document.getElementById("sbmit-report").onclick = function() {
+                    var report = new Request("/submit/report/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: "id=" + encodeURIComponent("{{m_id|safe}}")
+                    });
+                    fetch(report).then(response => response.text()).then(ret => {
+                        document.getElementById("sub-success-error").innerHTML = ret;
+                    })
+                }
+            </script>{% endcompress %}
+        </div>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,277 @@
+<html>
+
+<head>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Watch shows</title>
+    <meta name="og:title" content="Search for- {{q}} on show-box" />
+    <meta name='og:site_name' content="show-box" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <meta name='og:description' content="Watch Unlimited shows For Free on Show-Box!" />
+    <meta name="description" content="Watch Unlimited shows For Free on show-box!" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <style>
+        .img-box {
+            display: block;
+            text-align: center;
+            margin: 5px 10px;
+        }
+        
+        .display-img {
+            height: 200px;
+            width: 150px;
+            cursor: pointer;
+            border-radius: 15px;
+        }
+        
+        .submit-button {
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+            padding: 8px;
+            border: none;
+            outline: none;
+            background: #3367d6;
+            color: white;
+            text-transform: uppercase;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            margin-top: 20px;
+        }
+        
+        .ipgs {
+            border-radius: 5px;
+            padding: 8px;
+            border: 1px solid #3367d6;
+            width: 60px;
+            outline: none;
+            background: white;
+            cursor: pointer;
+            transition: 0.5s;
+        }
+        
+        .input_n {
+            -moz-border-radius: 15px;
+            -webkit-border-radius: 15px;
+            border-radius: 15px;
+            width: 45%;
+            height: 30px;
+            padding: 8px;
+        }
+        
+        .center_stuff {
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+        
+        #content {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: inherit;
+            height: auto;
+            padding: 15px;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #fff;
+        }
+        
+        #main {
+            background-color: #e3e3e3;
+            height: 100%;
+            width: 100%;
+            margin-top: 30px;
+        }
+        
+        .text-box {
+            max-width: 150px;
+            display: grid;
+            text-align: center;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        
+        .ipg {
+            -moz-border-radius: 20px;
+            -webkit-border-radius: 20px;
+            border-radius: 20px;
+            margin-left: 5px;
+            margin-right: 5px;
+            padding: 8px;
+            border: none;
+            outline: none;
+            background: #3367d6;
+            color: white;
+            text-transform: uppercase;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            margin-top: 20px;
+        }
+        
+        .ipg0 {
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+            padding: 8px;
+            border: none;
+            outline: none;
+            background: #3367d6;
+            color: white;
+            text-transform: uppercase;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            margin-top: 20px;
+        }
+        
+        .links {
+            text-decoration: none;
+            color: #fff;
+        }
+        
+        .links:hover {
+            border-bottom: 1px solid #e3e3e3;
+        }
+        
+        body {
+            font-family: 'Open Sans', 'sans-serif';
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="position:fixed;width:100%;top:0;margin-left:auto;margin-right:auto;padding: 8px;overflow: hidden;background: #333;text-align: center">
+        <a class=links href='/'><span class='h-link'>Home Page</span></a>
+    </div>
+    <div id="main">
+        <div class="center_stuff">
+            <div class="box-h-fa">
+                <div id=searchbox>
+                    <form action="/search">
+                        <input class=input_n style="outline: none" type="text" name="q">
+                        <input type="submit" id=fr-ui7-2-g11g class=submit-button style="width:10%;" value='Go'>
+                    </form>
+                </div>
+                <div id="content"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var __data = "{{data|safe}}";
+    </script>
+    {% compress 'js' %}
+    <script>
+        function start(params) {
+            var request = new Request("/dat" + "a/specs/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "q=" + params,
+                credentials: 'include'
+            });
+            fetch(request)
+                .then(response => response.text())
+                .then(response => {
+                    gen_results(response);
+                }).catch(e => {
+                    nores_()
+                })
+        }
+
+        function nores_() {
+            document.getElementById("main").style.display = 'none';
+            document.getElementById("no-res").style.display = 'block';
+        }
+
+        function gen_results(names) {
+            var names = JSON.parse(names);
+            if (names.hasOwnProperty("no-res")) {
+                nores_()
+            }
+            var i = 0;
+            for (; i < names["movies"]["length"]; i++) {
+                var img = document.createElement("img");
+                img["src"] = "/static" + "/loadi" + "ng.jpg";
+                gen_img(img, names["movies"][i]["thumb"]);
+                var dv = document.createElement("div");
+                dv["className"] = "img-box";
+                var atag = document.createElement("a");
+                atag["href"] = encodeURI("/movie/" + names["movies"][i]["id"] + "/" + names["movies"][i]["movie"].replace(/(\(|\)|\s)/g, "-") + "?id=" + btoa(Math.random()).slice(0, 8));
+                atag.appendChild(img);
+                dv.appendChild(atag);
+                img.className = 'display-img';
+                var sp = document.createElement("span");
+                sp["className"] = "text-box";
+                sp["innerHTML"] = names["movies"][i]["movie"];
+                dv.appendChild(sp);
+                document.getElementById("content").appendChild(dv);
+            }
+        }
+
+        function gen_img(img, imgURL) {
+            var compat_url = window["URL"] || window["webkitURL"];
+            var req = new Request(imgURL);
+            fetch(req)
+                .then(response => response.blob())
+                .then(blob => {
+                    img.src = compat_url.createObjectURL(blob);
+                });
+            img.onload = function() {
+                compat_url.revokeObjectURL(this.src)
+            }
+        };
+
+        function toke1(data) {
+            params = 'data=' + encodeURIComponent(data) + "&rns=" + btoa(Math.random().toString());
+            console.log(params)
+            var reqs = new Request('/fetch-token/configs/', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                credentials: 'include',
+                body: params
+            });
+            fetch(reqs).then(ret => ret.json()).then(retcode => {
+                data = retcode['id'];
+                fetch_2(data);
+            })
+        }
+
+        function fetch_2(data) {
+            var _params = 'data=' + encodeURIComponent(data);
+            var reqs = new Request('/fetch-token/links/post/', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: _params,
+                credentials: 'include'
+            });
+            fetch(reqs).then(ret => ret.json()).then(retcode => {
+                data = retcode['id'];
+                setTimeout(start(data), 700);
+            })
+        }
+        toke1(__data);
+    </script>{% endcompress %}
+</body>
+
+</html>

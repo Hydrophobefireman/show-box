@@ -1,0 +1,285 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta name="keywords" content="TV Series,TV Series-get,free TV Series,{{movie.replace(' ',',')|safe}}" />
+    <meta name='og:description' content="Watch {{movie}} For Free on TV Series-get!" />
+    <meta name='description' content="Watch {{movie}} For Free on TV Series-get!" />
+    <meta name='og:url' content="{{og_url|safe}}" />
+    <meta name='og:image' content="{{og_image|safe}}" />
+    <meta name='og:title' content="Watch {{movie|safe}} on TV Show-Box" />
+    <link rel="canonical" href="{{og_url|safe}}" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <script>
+        var movie_id_data = "12_8cs";
+    </script>
+    <meta name='og:site_name' content="TV Series-get" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="robots" content="index,follow" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <title>Watch {{movie|safe}} on TV Series-get</title>
+    <style>
+        .ipg0 {
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+            padding: 8px;
+            border: none;
+            outline: none;
+            background: #3367d6;
+            color: white;
+            text-transform: uppercase;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            margin-top: 20px;
+        }
+        
+        .input_n {
+            -moz-border-radius: 15px;
+            -webkit-border-radius: 15px;
+            border-radius: 15px;
+            width: 45%;
+            height: 30px;
+            padding: 8px;
+        }
+        
+        .submit-button {
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+            padding: 8px;
+            border: none;
+            outline: none;
+            background: #3367d6;
+            color: white;
+            text-transform: uppercase;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            margin-top: 20px;
+        }
+        
+        .center_stuff {
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+        
+        .ipg {
+            -moz-border-radius: 20px;
+            -webkit-border-radius: 20px;
+            border-radius: 20px;
+            margin-left: 5px;
+            margin-right: 5px;
+            padding: 8px;
+            border: none;
+            outline: none;
+            background: #3367d6;
+            color: white;
+            text-transform: uppercase;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            margin-top: 20px;
+        }
+        
+        .ipg_s {
+            -moz-border-radius: 20px;
+            -webkit-border-radius: 20px;
+            border-radius: 20px;
+            padding: 8px;
+            border: 2px solid #DFE1E5;
+            width: auto;
+            outline: none;
+            margin-top: 20px;
+            background: white;
+            text-transform: uppercase;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            transition: 0.5s;
+        }
+        
+        .links {
+            text-decoration: none;
+            color: #fff;
+        }
+        
+        .links:hover {
+            border-bottom: 1px solid #e3e3e3;
+        }
+        
+        body {
+            font-family: 'Open Sans', 'sans-serif';
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="position:fixed;width:100%;top:0;margin-left:auto;margin-right:auto;padding: 8px;overflow: hidden;background: #333;text-align: center">
+        <a class=links href='/'><span class='h-link'>Home Page</span></a>
+        <a class=links id='all' href=/all><span class='h-link'>All TV Series</span></a>
+    </div>
+    <div class=content-box style="margin-top:35px;">
+        <div class=center_stuff>
+            <div id=main>
+                <form action="/search">
+                    <input class=input_n style="outline: none" type="text" name="q">
+                    <input type="submit" id=fr-ui7-2-g11g class=submit-button style="width:10%;" value='Go'>
+                </form>
+                <h1>Watch: {{movie}}</h3>
+                    <hr>
+                    <div id="custom-dl-box" style='display: none'><button class="ipg0" id="custom-dl">Click Here to Use our custom Video Downloader</button><button class="ipg" id="downloader-info">info</button>
+                        <div id="hdn-info" style="display: none">We Will download the video from the website or extract the mp4 url for you to watch the video without any ads at all!</div>
+                        <div id=buttons-row style="display: none;margin-bottom: 20px;">
+                            <div class=info>Select the site</div>
+                            <button class="ipg_s" id="dl-s1">source1</button>
+                            <button class="ipg_s" id="dl-s2">source2</button>
+                            <button class="ipg_s" id="dl-s3">source3</button>
+                        </div>
+                    </div>
+                    <div id=content>
+                        <div id=ifr-bx> <iframe id=player-frame src="" style="width: 100%;height: 500px;"></iframe></div>
+                        <script>
+                            (function() {
+                                var bl_ob = new Blob(['<div style="text-align:center;">Loading Your Video You can click one of the buttons to change the url</div>'], {
+                                    "type": "text/html"
+                                });
+                                document.getElementById("player-frame").src = window.URL.createObjectURL(bl_ob);
+                            })();
+                        </script>
+                        <div class="sources">
+                            <button class="ipg" id="source1">source1</button>
+                            <button class="ipg" id="source2">source2</button>
+                            <button class="ipg" id="source3">source3</button>
+                        </div>
+                    </div>
+            </div>
+        </div>
+        <div class=dead-links>
+            <button class=ipg_s id=d-linker style="width: 100%;">Report Dead Links</button>
+        </div>
+        <script>
+            var nonce = "{{nonce|safe}}"
+        </script>
+        {% compress 'js' %}
+        <script>
+            function extractHostname(url) {
+                try {
+                    var a;
+                    if (url.indexOf("://") > -1) {
+                        a = new URL(url);
+
+                    } else {
+                        url = "http://" + url;
+                        a = new URL(url);
+                    }
+                    return a.hostname;
+                } catch (e) {
+                    return 'null'
+                }
+            }
+            var movie_id = window.location.pathname.split("/")[2]
+            var keys = "set-id"
+
+            function start_player(key) {
+                console.log(key);
+                var params = eval('encodeURI("id=" + movie_id + "&nonce=" + nonce)');
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", '/dat' + 'a-parser/' + 'plugin' + 's/player/', true);
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        var data = xhr.response;
+                        build_player(data, key);
+                    }
+                }
+                xhr.onerror = function() {
+                    var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' + 'm' + 'e');
+                    fetch("/error-configs/")
+                        .then(response => response.blob()).then(ret => {
+                            ifr.src = window.URL.createObjectURL(ret);
+                        })
+                }
+                xhr.send(params);
+            }
+            document.getElementById("c" + "u" + "s" + "tom-dl").onclick = function() {
+
+            }
+
+            function build_player(data, key) {
+                document.getElementById("custom-dl-box").style.display = 'block';
+                data = JSON.parse(data);
+                var url = data['url'];
+                var alt1 = data['alt1'];
+                var alt2 = data['alt2'];
+                var btns1 = document.getElementById("source1");
+                var btns2 = document.getElementById("source2");
+                var btns3 = document.getElementById("source3");
+                var btndl1 = document.getElementById("dl-s1");
+                var btndl2 = document.getElementById("dl-s2");
+                var btndl3 = document.getElementById("dl-s3");
+
+                function btndata(btn, btndl, url) {
+                    btn.setAttribute("data", url);
+                    btn.innerHTML = extractHostname(url);
+                    btn.style.display = ((extractHostname(url) == 'null') ? 'none' : 'inline');
+                    btn.style.display = ((extractHostname(url).toLowerCase() == 'none') ? 'none' : 'inline');
+                    btndl.style.display = btn.style.display;
+                    btndl.innerHTML = btn.innerHTML;
+                    btndl.setAttribute("data-dl", url);
+                    btndl.innerHTML = btn.innerHTML;
+                    btn.onclick = function() {
+                        var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' + 'm' + 'e');
+                        document.getElementById("ifr-bx").removeChild(ifr);
+                        ifr.src = this.getAttribute("data");
+                        document.getElementById("ifr-bx").appendChild(ifr);
+                    }
+                    btndl.onclick = function() {
+                        window.location = '/out?url=' + encodeURIComponent(this.getAttribute("data-dl"));
+                    }
+                }
+                btndata(btns1, btndl1, url);
+                btndata(btns2, btndl2, alt1);
+                btndata(btns3, btndl3, alt2);
+                var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' + 'm' + 'e');
+                ifr.src = url;
+            }
+            document.getElementById("downloader-info").onclick = function() {
+                document.getElementById("hdn-info").style.display = 'block';
+                document.getElementById("downloader-info").style.display = 'none';
+            }
+            start_player(keys);
+
+            document.getElementById("d-linker").onclick = function() {
+                window.location = encodeURI("/report?id=" + movie_id);
+            };
+            document.getElementById("custom-dl").onclick = function() {
+                document.getElementById("buttons-row").style.display = 'block';
+            }
+        </script>
+        {% endcompress %}
+</body>
+
+</html>
