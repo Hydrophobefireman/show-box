@@ -310,7 +310,7 @@ def add_():
         title = data['title']
         thumb = data['thumb']
         season = data['season']
-        episodes = json.loads(data['episodes'])
+        episodes = data['episodes']
         col = tvData(title, thumb, season, episodes)
         db.session.add(col)
         db.session.commit()
