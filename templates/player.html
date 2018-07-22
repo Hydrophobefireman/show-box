@@ -259,6 +259,9 @@
                     a.setAttribute("data-eid", p);
                     document.getElementById("ep_names").appendChild(a);
                     a.className = "episode-lists";
+                    if (a.getAttribute("data-eid") == '1') {
+                        a.click()
+                    }
                     a.onclick = function() {
                         get_url_for(this.getAttribute('data-eid'), t_id);
                     }
