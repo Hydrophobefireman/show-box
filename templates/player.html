@@ -260,7 +260,7 @@
                     a.setAttribute("data-eid", p);
                     document.getElementById("ep_names").appendChild(a);
                     a.className = "episode-lists";
-                    if (a.getAttribute("data-eid") == '1') {
+                    if (a.getAttribute("data-eid").toString() == '1') {
                         a.click()
                     }
                     a.onclick = function() {
@@ -297,9 +297,9 @@
                 console.log(data);
                 document.getElementById("custom-dl-box").style.display = 'block';
                 data = JSON.parse(data);
-                var url = data['url'].replace("http:", "https:");
-                var alt1 = data['alt1'].replace("http:", "https:");
-                var alt2 = data['alt2'].replace("http:", "https:");
+                var url = data['url'];
+                var alt1 = data['alt1'];
+                var alt2 = data['alt2'];
                 var btns1 = document.getElementById("source1");
                 var btns2 = document.getElementById("source2");
                 var btns3 = document.getElementById("source3");
