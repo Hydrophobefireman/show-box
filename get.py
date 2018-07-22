@@ -315,8 +315,8 @@ def add_():
         db.session.add(col)
         db.session.commit()
         return str(col)
-    except:
-        return "Malformed Input"
+    except Exception as e:
+        return "Malformed Input"+str(e)
 
 
 @app.route("/out")
