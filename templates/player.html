@@ -20,6 +20,27 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <title>Watch {{movie|safe}} on TV Series-get</title>
     <style>
+        .episode-lists {
+            outline: none;
+            padding: 7px 12px 5px 12px;
+            text-align: center;
+            border-radius: 15px;
+            background: #f0f0f0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #333;
+            font-weight: bold;
+            margin: 5px;
+            white-space: nowrap;
+            display: inline-block;
+            text-transform: uppercase
+        }
+        
+        .episode-lists:active {
+            background: #333;
+            color: #fff;
+        }
+        
         .ipg0 {
             -moz-border-radius: 5px;
             -webkit-border-radius: 5px;
@@ -147,33 +168,35 @@
                     <input class=input_n style="outline: none" type="text" name="q">
                     <input type="submit" id=fr-ui7-2-g11g class=submit-button style="width:10%;" value='Go'>
                 </form>
-                <h1>Watch: {{movie}}</h3>
-                    <hr>
-                    <div id="custom-dl-box" style='display: none'><button class="ipg0" id="custom-dl">Click Here to Use our custom Video Downloader</button><button class="ipg" id="downloader-info">info</button>
-                        <div id="hdn-info" style="display: none">We Will download the video from the website or extract the mp4 url for you to watch the video without any ads at all!</div>
-                        <div id=buttons-row style="display: none;margin-bottom: 20px;">
-                            <div class=info>Select the site</div>
-                            <button class="ipg_s" id="dl-s1">source1</button>
-                            <button class="ipg_s" id="dl-s2">source2</button>
-                            <button class="ipg_s" id="dl-s3">source3</button>
-                        </div>
+                <h1>Watch: {{movie}}</h1>
+                <h2 id=curr-ep-id></h2>
+                <hr>
+                <div id="custom-dl-box" style='display: none'><button class="ipg0" id="custom-dl">Click Here to Use our custom Video Downloader</button><button class="ipg" id="downloader-info">info</button>
+                    <div id="hdn-info" style="display: none">We Will download the video from the website or extract the mp4 url for you to watch the video without any ads at all!</div>
+                    <div id=buttons-row style="display: none;margin-bottom: 20px;">
+                        <div class=info>Select the site</div>
+                        <button class="ipg_s" id="dl-s1">source1</button>
+                        <button class="ipg_s" id="dl-s2">source2</button>
+                        <button class="ipg_s" id="dl-s3">source3</button>
                     </div>
-                    <div id=content>
-                        <div id=ifr-bx> <iframe id=player-frame src="" style="width: 100%;height: 500px;"></iframe></div>
-                        <script>
-                            (function() {
-                                var bl_ob = new Blob(['<div style="text-align:center;">Loading Your Video You can click one of the buttons to change the url</div>'], {
-                                    "type": "text/html"
-                                });
-                                document.getElementById("player-frame").src = window.URL.createObjectURL(bl_ob);
-                            })();
-                        </script>
-                        <div class="sources">
-                            <button class="ipg" id="source1">source1</button>
-                            <button class="ipg" id="source2">source2</button>
-                            <button class="ipg" id="source3">source3</button>
-                        </div>
+                </div>
+                <div id=content>
+                    <div id=ifr-bx> <iframe id=player-frame src="" style="width: 100%;height: 500px;"></iframe></div>
+                    <script>
+                        (function() {
+                            var bl_ob = new Blob(['<div style="text-align:center;">Loading Your Video You can click one of the buttons to change the url</div>'], {
+                                "type": "text/html"
+                            });
+                            document.getElementById("player-frame").src = window.URL.createObjectURL(bl_ob);
+                        })();
+                    </script>
+                    <div id=ep_names></div>
+                    <div class="sources">
+                        <button class="ipg" id="source1">source1</button>
+                        <button class="ipg" id="source2">source2</button>
+                        <button class="ipg" id="source3">source3</button>
                     </div>
+                </div>
             </div>
         </div>
         <div class=dead-links>
@@ -212,7 +235,7 @@
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4 && xhr.status == 200) {
                         var data = xhr.response;
-                        build_player(data, key);
+                        set_meta_data(data);
                     }
                 }
                 xhr.onerror = function() {
@@ -224,11 +247,50 @@
                 }
                 xhr.send(params);
             }
-            document.getElementById("c" + "u" + "s" + "tom-dl").onclick = function() {
 
+            function set_meta_data(data) {
+                data = JSON.parse(data);
+                var episode_num = parseInt(data.episode_meta);
+                var t_id = data.tempid;
+                for (var i = 0; i < episode_num; i++) {
+                    p = i + 1;
+                    var a = document.createElement("button");
+                    a.innerText = "Episode " + p;
+                    a.setAttribute("data-eid", p);
+                    document.getElementById("ep_names").appendChild(a);
+                    a.className = "episode-lists";
+                    a.onclick = function() {
+                        get_url_for(this.getAttribute('data-eid'), t_id);
+                    }
+                }
             }
 
+            function get_url_for(eid, nonce) {
+                var req = new Request("/build-player/ep/", {
+                    method: "POST",
+                    body: "eid=" + encodeURIComponent(eid) + "&nonce=" + encodeURIComponent(nonce) + "&mid=" + encodeURIComponent(movie_id),
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    credentials: "include"
+                });
+                fetch(req)
+                    .then(res => res.text()).then(ret => {
+                        build_player(ret, "dummy-key-authorised")
+                        document.getElementById("curr-ep-id").innerHTML = "Now Playing-Episode " + eid;
+                    }).catch(e => {
+                        console.error(e);
+                        var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' + 'm' + 'e');
+                        fetch("/error-configs/")
+                            .then(response => response.blob()).then(ret => {
+                                ifr.src = window.URL.createObjectURL(ret);
+                            });
+                    });
+            }
+
+
             function build_player(data, key) {
+                console.log(data);
                 document.getElementById("custom-dl-box").style.display = 'block';
                 data = JSON.parse(data);
                 var url = data['url'];
@@ -244,8 +306,11 @@
                 function btndata(btn, btndl, url) {
                     btn.setAttribute("data", url);
                     btn.innerHTML = extractHostname(url);
-                    btn.style.display = ((extractHostname(url) == 'null') ? 'none' : 'inline');
-                    btn.style.display = ((extractHostname(url).toLowerCase() == 'none') ? 'none' : 'inline');
+                    if (extractHostname(url) == "null" || extractHostname(url).toLowerCase() == 'none') {
+                        btn.style.display = 'none'
+                    } else {
+                        btn.style.display = 'inline'
+                    }
                     btndl.style.display = btn.style.display;
                     btndl.innerHTML = btn.innerHTML;
                     btndl.setAttribute("data-dl", url);

@@ -47,22 +47,15 @@ class tvData(db.Model):
     movie = db.Column(db.String(100))
     moviedisplay = db.Column(db.String(100))
     season = db.Column(db.String(3))
-    episode = db.Column(db.String(10))
-    url = db.Column(db.String(1000))
-    alt1 = db.Column(db.String(1000))
-    alt2 = db.Column(db.String(1000))
+    episodes = db.Column(db.PickleType)
     thumb = db.Column(db.String(1000))
 
-    def __init__(self, movie, url, alt1, alt2, thumb, season, episode):
+    def __init__(self, movie, thumb, season, episodes):
         self.mid = generate_id()
         self.season = season
-        self.episode = episode
-        self.movie = re.sub(r"\s", "", movie+":season%sepisode%s" %
-                            (season, episode)).lower()
-        self.moviedisplay = movie+" season-%s episode-%s" % (season, episode)
-        self.url = str(url).replace("http://", "https://")
-        self.alt1 = str(alt1).replace("http://", "https://")
-        self.alt2 = str(alt2).replace("http://", "https://")
+        self.episodes = episodes
+        self.movie = re.sub(r"\s", "", movie.lower())
+        self.moviedisplay = movie
         self.thumb = thumb
 
     def __repr__(self):
@@ -71,7 +64,7 @@ class tvData(db.Model):
 
 def generate_id():
     lst_ = list(base64.urlsafe_b64encode((str(uuid.uuid1())+str(uuid.uuid4()) +
-                                          uuid.uuid4().hex+str(time.time())).encode()).decode().replace("=", '- -'))
+                                          uuid.uuid4().hex+str(time.time())).encode()).decode().replace("=", '--'))
     random.shuffle(lst_)
     return ''.join(lst_)[:gen_rn()]
 
@@ -272,8 +265,24 @@ def plugin():
     mid = request.form['id']
     if request.form['nonce'] != session['req_nonce']:
         return "Lol"
+    nonce = generate_id()
+    session['req_nonce'] = nonce
     data = tvData.query.filter_by(mid=mid).first()
-    json_data = {"url": data.url, "alt1": data.alt1, "alt2": data.alt2}
+    json_data = {"season": data.season, "episode_meta": len(
+        data.episodes), "tempid": nonce, "utf-8": "✓"}
+    return json.dumps(json_data)
+
+
+@app.route("/build-player/ep/", methods=['POST'])
+def send_ep_data():
+    eid = request.form['eid']
+    if request.form['nonce'] != session['req_nonce']:
+        return "Lol"
+    episode = request.form['mid']
+    data = tvData.query.filter_by(mid=episode).first()
+    episodes = data.episodes
+    urls = episodes[int(eid)]
+    json_data = {"url": urls[0], 'alt1': urls[1], 'alt2': urls[2]}
     return json.dumps(json_data)
 
 

@@ -5,10 +5,7 @@ import sys
 
 def add_to_db(data):
     from get import db, tvData
-    assert isinstance(data, tuple) and len(data) == 7
-    url = data[1]
-    if tvData.query.filter_by(url=url).first() is not None:
-        raise Exception("Added Already")
+    assert isinstance(data, tuple) and len(data) == 4
     col = tvData(*data)
     db.session.add(col)
     db.session.commit()
