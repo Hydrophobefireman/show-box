@@ -281,7 +281,10 @@ def send_ep_data():
     episode = request.form['mid']
     data = tvData.query.filter_by(mid=episode).first()
     episodes = data.episodes
-    urls = episodes[int(eid)]
+    try:
+        urls = episodes[int(eid)]
+    except:
+        urls = episodes[eid]
     json_data = {"url": str(urls[0]).replace("http:", "https:"), 'alt1': str(
         urls[1]).replace("http:", "https:"), 'alt2': str(urls[2]).replace("http:", "https:")}
     return json.dumps(json_data)
