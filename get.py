@@ -10,8 +10,17 @@ from urllib.parse import quote, unquote
 import psycopg2
 import requests
 from bs4 import BeautifulSoup as bs
-from flask import (Flask, Response, make_response, redirect, render_template,
-                   request, send_from_directory, session, url_for)
+from flask import (
+    Flask,
+    Response,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+    url_for,
+)
 from flask_compress import Compress
 from flask_sqlalchemy import SQLAlchemy
 from htmlmin.minify import html_minify
@@ -22,12 +31,12 @@ from dbmanage import req_db
 
 app = Flask(__name__)
 Compress(app)
-app.config['COMPRESSOR_DEBUG'] = app.config.get('DEBUG')
-app.config['COMPRESSOR_OUTPUT_DIR'] = './static/jsbin'
-app.config['COMPRESSOR_STATIC_PREFIX'] = '/static/jsbin/'
+app.config["COMPRESSOR_DEBUG"] = app.config.get("DEBUG")
+app.config["COMPRESSOR_OUTPUT_DIR"] = "./static/jsbin"
+app.config["COMPRESSOR_STATIC_PREFIX"] = "/static/jsbin/"
 jac = JAC(app)
 app.secret_key = "H(|hGh<;e"
-dburl = os.environ.get('DATABASE_URL')
+dburl = os.environ.get("DATABASE_URL")
 
 try:
     if dburl is None:
@@ -37,8 +46,8 @@ except FileNotFoundError:
     raise Exception(
         "No DB url specified try add it to the environment or create a .dbinfo_ file with the url"
     )
-app.config['SQLALCHEMY_DATABASE_URI'] = dburl
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SQLALCHEMY_DATABASE_URI"] = dburl
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3343.3 Safari/537.36"
 
@@ -60,16 +69,24 @@ class tvData(db.Model):
         self.thumb = thumb
 
     def __repr__(self):
-        return '<Name %r>' % self.movie
+        return "<Name %r>" % self.movie
 
 
 def generate_id():
     lst_ = list(
         base64.urlsafe_b64encode(
-            (str(uuid.uuid1()) + str(uuid.uuid4()) + uuid.uuid4().hex + str(
-                time.time())).encode()).decode().replace("=", '--'))
+            (
+                str(uuid.uuid1())
+                + str(uuid.uuid4())
+                + uuid.uuid4().hex
+                + str(time.time())
+            ).encode()
+        )
+        .decode()
+        .replace("=", "--")
+    )
     random.shuffle(lst_)
-    return ''.join(lst_)[:gen_rn()]
+    return "".join(lst_)[: gen_rn()]
 
 
 def gen_rn():
@@ -86,7 +103,7 @@ class tvRequests(db.Model):
         self.url = url
 
     def __repr__(self):
-        return '<Name %r>' % self.movie
+        return "<Name %r>" % self.movie
 
 
 class deadLinks(db.Model):
@@ -99,21 +116,25 @@ class deadLinks(db.Model):
         self.name = name
 
     def __repr__(self):
-        return '<Name %r>' % self.movieid
+        return "<Name %r>" % self.movieid
 
 
 @app.before_request
 def https():
-    if request.endpoint in app.view_functions and not request.is_secure and "127.0.0.1" not in request.url and not "localhost" in request.url:
+    if (
+        request.endpoint in app.view_functions
+        and not request.is_secure
+        and "127.0.0.1" not in request.url
+        and not "localhost" in request.url
+    ):
         return redirect(request.url.replace("http://", "https://"), code=301)
 
 
 @app.route("/robots.txt")
 def check__():
     return send_from_directory(
-        os.path.join(app.root_path, 'static'),
-        'robots.txt',
-        mimetype='text/plain')
+        os.path.join(app.root_path, "static"), "robots.txt", mimetype="text/plain"
+    )
 
 
 @app.route("/")
@@ -135,14 +156,13 @@ def report_dead():
         return "No movie associated with given id"
     thumb = meta_.thumb
     title = meta_.moviedisplay
-    return render_template(
-        "link-report.html", m_id=m_id, title=title, thumb=thumb)
+    return render_template("link-report.html", m_id=m_id, title=title, thumb=thumb)
 
 
-@app.route("/submit/report/", methods=['POST'])
+@app.route("/submit/report/", methods=["POST"])
 def parse_report():
     try:
-        mid = request.form['id']
+        mid = request.form["id"]
         col = deadLinks(mid)
         db.session.add(col)
         db.session.commit()
@@ -155,8 +175,7 @@ def parse_report():
 
 @app.route("/search")
 def send_m():
-    if request.args.get("q") is None or not re.sub(r"[^\w]", "",
-                                                   request.args.get("q")):
+    if request.args.get("q") is None or not re.sub(r"[^\w]", "", request.args.get("q")):
         return "Specify a term!"
     return html_minify(render_template("movies.html", q=request.args.get("q")))
 
@@ -166,13 +185,13 @@ def ask_get():
     return html_minify(render_template("help.html"))
 
 
-@app.route("/db-manage/parse-requests/", methods=['POST'])
+@app.route("/db-manage/parse-requests/", methods=["POST"])
 def get_s():
-    movie = request.form.get('movie')
+    movie = request.form.get("movie")
     if not re.sub(r"\s", "", movie):
         print("No movie Given")
         return "Please mention the movie"
-    url = request.form.get('url')
+    url = request.form.get("url")
     data = (movie, url)
     a = req_db(data)
     print(a)
@@ -184,20 +203,18 @@ def google_():
     return "google-site-verification: googlef06ee521abc7bdf8.html"
 
 
-@app.route("/data/search/", methods=['POST'])
+@app.route("/data/search/", methods=["POST"])
 def serchs():
     json_data = {}
-    json_data['movies'] = []
+    json_data["movies"] = []
     q = re.sub(r"\s", "", request.form["q"]).lower()
     urls = tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q))).all()
     for url in urls:
-        json_data['movies'].append({
-            "movie": url.moviedisplay,
-            'id': url.mid,
-            "thumb": url.thumb
-        })
-    if len(json_data['movies']) == 0:
-        return json.dumps({'no-res': True})
+        json_data["movies"].append(
+            {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
+        )
+    if len(json_data["movies"]) == 0:
+        return json.dumps({"no-res": True})
     return json.dumps(json_data)
 
 
@@ -206,83 +223,76 @@ def err_configs():
     return render_template("err.html")
 
 
-@app.route('/favicon.ico')
+@app.route("/favicon.ico")
 def favicon():
     return send_from_directory(
-        os.path.join(app.root_path, 'static'),
-        'favicon.ico',
-        mimetype='image/x-icon')
+        os.path.join(app.root_path, "static"), "favicon.ico", mimetype="image/x-icon"
+    )
 
 
 @app.route("/all/", strict_slashes=False)
 def all_movies():
-    session['req-all'] = (generate_id() + generate_id())[:20]
-    return html_minify(render_template("all.html", data=session['req-all']))
+    session["req-all"] = (generate_id() + generate_id())[:20]
+    return html_minify(render_template("all.html", data=session["req-all"]))
 
 
-@app.route("/fetch-token/configs/", methods=['POST'])
+@app.route("/fetch-token/configs/", methods=["POST"])
 def gen_conf():
-    data = request.form['data']
-    rns = request.form['rns']
-    if data != session['req-all']:
-        return 'lol'
-    session['req-all'] = (generate_id() + rns + generate_id())[:20]
+    data = request.form["data"]
+    rns = request.form["rns"]
+    if data != session["req-all"]:
+        return "lol"
+    session["req-all"] = (generate_id() + rns + generate_id())[:20]
     return Response(
-        json.dumps({
-            "id": session['req-all'],
-            "rns": rns
-        }),
-        content_type='application/json')
+        json.dumps({"id": session["req-all"], "rns": rns}),
+        content_type="application/json",
+    )
 
 
-@app.route("/data/specs/", methods=['POST'])
+@app.route("/data/specs/", methods=["POST"])
 def get_all():
     json_data = {}
-    forms = request.form['q']
-    json_data['movies'] = []
-    if session['req-all'] != forms:
+    forms = request.form["q"]
+    json_data["movies"] = []
+    if session["req-all"] != forms:
         return "!cool"
-    if os.path.isfile('.db-cache--all'):
-        with open(".db-cache--all", 'r') as f:
+    if os.path.isfile(".db-cache--all"):
+        with open(".db-cache--all", "r") as f:
             try:
                 cached_data = json.loads(f.read())
                 tst = cached_data.get("stamp")
                 if time.time() - float(tst) < 600:
                     print("Sending Cached Data")
                     res = make_response(json.dumps(cached_data.get("data")))
-                    res.headers['X-Sent-Cached'] = True
+                    res.headers["X-Sent-Cached"] = True
                     return res
             except:  # File manually emptied
                 pass
     urls = tvData.query.all()
     random.shuffle(urls)
     for url in urls:
-        json_data['movies'].append({
-            "movie": url.moviedisplay,
-            'id': url.mid,
-            "thumb": url.thumb
-        })
-    if len(json_data['movies']) == 0:
-        return json.dumps({'no-res': True})
+        json_data["movies"].append(
+            {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
+        )
+    if len(json_data["movies"]) == 0:
+        return json.dumps({"no-res": True})
     meta_ = {"stamp": time.time(), "data": json_data}
     with open(".db-cache--all", "w") as fs:
         fs.write(json.dumps(meta_))
     res = make_response(json.dumps(json_data))
-    res.headers['X-Sent-Cached'] = False
+    res.headers["X-Sent-Cached"] = False
     return res
 
 
-@app.route('/fetch-token/links/post/', methods=['POST'])
+@app.route("/fetch-token/links/post/", methods=["POST"])
 def s_confs():
-    data = request.form['data']
-    if data != session['req-all']:
+    data = request.form["data"]
+    if data != session["req-all"]:
         return "No"
-    session['req-all'] = (generate_id() + generate_id())[:20]
+    session["req-all"] = (generate_id() + generate_id())[:20]
     return Response(
-        json.dumps({
-            "id": session['req-all']
-        }),
-        content_type='application/json')
+        json.dumps({"id": session["req-all"]}), content_type="application/json"
+    )
 
 
 @app.route("/movie/<mid>/<mdata>/")
@@ -295,46 +305,48 @@ def send_movie(mid, mdata):
     movie_name = meta_.moviedisplay
     thumbnail = meta_.thumb
     r_n = random.randint(4, 25)
-    session['req_nonce'] = (str(uuid.uuid1()) + str(uuid.uuid4()))[:r_n]
+    session["req_nonce"] = (str(uuid.uuid1()) + str(uuid.uuid4()))[:r_n]
     return html_minify(
         render_template(
             "player.html",
-            nonce=session['req_nonce'],
+            nonce=session["req_nonce"],
             movie=movie_name,
             og_url=request.url,
-            og_image=thumbnail))
+            og_image=thumbnail,
+        )
+    )
 
 
-@app.route("/data-parser/plugins/player/", methods=['POST'])
+@app.route("/data-parser/plugins/player/", methods=["POST"])
 def plugin():
-    mid = request.form['id']
-    if request.form['nonce'] != session['req_nonce']:
+    mid = request.form["id"]
+    if request.form["nonce"] != session["req_nonce"]:
         return "Lol"
     nonce = generate_id()
-    session['req_nonce'] = nonce
+    session["req_nonce"] = nonce
     data = tvData.query.filter_by(mid=mid).first()
     json_data = {
         "season": data.season,
         "episode_meta": len(data.episodes),
         "tempid": nonce,
-        "utf-8": "✓"
+        "utf-8": "✓",
     }
     return json.dumps(json_data)
 
 
-@app.route("/build-player/ep/", methods=['POST'])
+@app.route("/build-player/ep/", methods=["POST"])
 def send_ep_data():
-    eid = request.form['eid']
-    if request.form['nonce'] != session['req_nonce']:
+    eid = request.form["eid"]
+    if request.form["nonce"] != session["req_nonce"]:
         return "Lol"
-    episode = request.form['mid']
+    episode = request.form["mid"]
     data = tvData.query.filter_by(mid=episode).first()
     episodes = data.episodes
     urls = episodes.get(int(eid)) or episodes.get(eid)
     json_data = {
         "url": str(urls[0]).replace("http:", "https:"),
-        'alt1': str(urls[1]).replace("http:", "https:"),
-        'alt2': str(urls[2]).replace("http:", "https:")
+        "alt1": str(urls[1]).replace("http:", "https:"),
+        "alt2": str(urls[2]).replace("http:", "https:"),
     }
     return json.dumps(json_data)
 
@@ -344,17 +356,17 @@ def b404():
     return html_minify(render_template("no-result.html"))
 
 
-@app.route("/sec/add/", methods=['POST'])
+@app.route("/sec/add/", methods=["POST"])
 def add_():
     try:
-        data = request.form['lists']
-        if request.form['pw'] != os.environ.get("_pass_"):
+        data = request.form["lists"]
+        if request.form["pw"] != os.environ.get("_pass_"):
             return "No"
         data = json.loads(data)
-        title = data['title']
-        thumb = data['thumb']
-        season = data['season']
-        episodes = data['episodes']
+        title = data["title"]
+        thumb = data["thumb"]
+        season = data["season"]
+        episodes = data["episodes"]
         col = tvData(title, thumb, season, episodes)
         db.session.add(col)
         db.session.commit()
@@ -372,4 +384,5 @@ def redir():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host="0.0.0.0")
+
