@@ -7,3 +7,4 @@ beautifulsoup4==4.6.0
 django-htmlmin==0.10.0
 gunicorn==19.8.1
 flask-compress==1.4.0
+brotlipy==0.7.0

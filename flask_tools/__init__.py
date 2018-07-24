@@ -1,11 +1,17 @@
 import os
 import uuid
+import brotli
+from flask import (redirect, request, send_from_directory)
+config = {
+    'COMPRESS_MIMETYPES': [
+        'text/html', 'text/css', 'text/xml', 'application/json',
+        'application/javascript'
+    ],
+    "COMPRESS_MIN_SIZE":
+    500
+}
 
-from flask import (
-    redirect,
-    request,
-    send_from_directory
-)
+import time
 
 
 class flaskUtils(object):
@@ -20,10 +26,43 @@ class flaskUtils(object):
         app.extensions["utils_ext"] = self
         self.app = app
 
+        @app.before_request
+        def https_and_brotli_check():
+            request.process_time = time.time()
+            if (app.config.get("FORCE_HTTPS_ON_PROD")
+                    and request.endpoint in app.view_functions
+                    and not request.is_secure
+                    and "127.0.0.1" not in request.url
+                    and "localhost" not in request.url):
+                return redirect(
+                    request.url.replace("http://", "https://"), code=301)
+
         @app.after_request
         def after_req_headers(res):
+            res.headers['X-Process-Time'] = time.time() - request.process_time
+            accept_encoding = request.headers.get('Accept-Encoding', '')
             res.headers["X-Powered-By"] = "Flask"
             res.headers["X-UID"] = str(uuid.uuid4())
+            if (res.mimetype not in config['COMPRESS_MIMETYPES']
+                    or 'br' not in accept_encoding.lower()
+                    or not 200 <= res.status_code < 300
+                    or (res.content_length is not None
+                        and res.content_length < config['COMPRESS_MIN_SIZE'])
+                    or 'Content-Encoding' in res.headers):
+                return res
+            res.direct_passthrough = False
+
+            res.set_data(brotli_content(res))
+            res.headers['Content-Encoding'] = 'br'
+            res.headers['Content-Length'] = res.content_length
+
+            vary = res.headers.get('Vary')
+            if vary:
+                if 'accept-encoding' not in vary.lower():
+                    res.headers['Vary'] = '{}, Accept-Encoding'.format(vary)
+            else:
+                res.headers['Vary'] = 'Accept-Encoding'
+
             return res
 
         @app.route("/favicon.ico")
@@ -33,12 +72,8 @@ class flaskUtils(object):
                 "favicon.ico",
                 mimetype="image/x-icon")
 
-        @app.before_request
-        def https():
-            if (app.config.get("FORCE_HTTPS_ON_PROD")
-                    and request.endpoint in app.view_functions
-                    and not request.is_secure
-                    and "127.0.0.1" not in request.url
-                    and "localhost" not in request.url):
-                return redirect(
-                    request.url.replace("http://", "https://"), code=301)
+
+def brotli_content(response):
+    data = response.get_data()
+    deflated = brotli.compress(data)
+    return deflated
