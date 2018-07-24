@@ -271,12 +271,14 @@
                     a.setAttribute("data-eid", p);
                     document.getElementById("ep_names").appendChild(a);
                     a.className = "episode-lists";
-                    if (a.getAttribute("data-eid").toString() == '1') {
-                        a.click()
-                    }
                     a.onclick = function() {
                         get_url_for(this.getAttribute('data-eid'), t_id);
                     }
+                }
+                try {
+                    get_url_for("1", t_id)
+                } catch (e) {
+                    console.log(e);
                 }
             }
 
@@ -320,14 +322,12 @@
                 var btndl3 = document.getElementById("dl-s3");
 
                 function btndata(btn, btndl, url) {
-                    console.log(url);
                     if (url.indexOf("://") > -1) {
                         url = url.replace("http://", "https://");
 
                     } else if (url.indexOf("//") == 0) { /* protocol relative url */
                         url = "https:" + url;
                     }
-                    console.log(url);
                     btn.setAttribute("data", url);
                     btn.innerHTML = extractHostname(url);
                     if (extractHostname(url) == "null" || extractHostname(url).toLowerCase() == 'none') {
