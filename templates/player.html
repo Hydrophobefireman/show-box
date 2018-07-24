@@ -283,6 +283,10 @@
             }
 
             function get_url_for(eid, nonce) {
+                var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' +
+                    'm' + 'e');
+                ifr.src =
+                    'data:text/html;utf-8,<div style="margin-left:auto;margin-right:auto;text-align:center">Loading The Video</div>';
                 var req = new Request("/build-player/ep/", {
                     method: "POST",
                     body: "eid=" + encodeURIComponent(eid) + "&nonce=" + encodeURIComponent(nonce) + "&mid=" +
@@ -298,8 +302,6 @@
                         document.getElementById("curr-ep-id").innerHTML = "Now Playing-Episode " + eid;
                     }).catch(e => {
                         console.error(e);
-                        var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' +
-                            'm' + 'e');
                         fetch("/error-configs/")
                             .then(response => response.blob()).then(ret => {
                                 ifr.src = window.URL.createObjectURL(ret);
