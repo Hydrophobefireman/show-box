@@ -26,7 +26,9 @@ wheels/
 MANIFEST
 #MinifiedJS
 static/jsbin/
+
 #CUSTOM
+.db-cache--all
 js-obfs.js
 js-player.obfs.js
 js-obfuscated.js

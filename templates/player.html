@@ -159,8 +159,12 @@
 
 <body>
     <div style="position:fixed;width:100%;top:0;margin-left:auto;margin-right:auto;padding: 8px;overflow: hidden;background: #333;text-align: center">
-        <a class=links href='/'><span class='h-link'>Home Page</span></a>
-        <a class=links id='all' href=/all><span class='h-link'>All TV Series</span></a>
+        <a class=links href='/'>
+            <span class='h-link'>Home Page</span>
+        </a>
+        <a class=links id='all' href=/all>
+            <span class='h-link'>All TV Series</span>
+        </a>
     </div>
     <div class=content-box style="margin-top:35px;">
         <div class=center_stuff>
@@ -172,7 +176,9 @@
                 <h1>Watch: {{movie}}</h1>
                 <h2 id=curr-ep-id></h2>
                 <hr>
-                <div id="custom-dl-box" style='display: none'><button class="ipg0" id="custom-dl">Click Here to Use our custom Video Downloader</button><button class="ipg" id="downloader-info">info</button>
+                <div id="custom-dl-box" style='display: none'>
+                    <button class="ipg0" id="custom-dl">Click Here to Use our custom Video Downloader</button>
+                    <button class="ipg" id="downloader-info">info</button>
                     <div id="hdn-info" style="display: none">We Will download the video from the website or extract the mp4 url for you to watch the video without any ads at all!</div>
                     <div id=buttons-row style="display: none;margin-bottom: 20px;">
                         <div class=info>Select the site</div>
@@ -182,10 +188,14 @@
                     </div>
                 </div>
                 <div id=content>
-                    <div id=ifr-bx> <iframe id=player-frame src="" style="width: 100%;height: 500px;"></iframe></div>
+                    <div id=ifr-bx>
+                        <iframe id=player-frame src="" style="width: 100%;height: 500px;"></iframe>
+                    </div>
                     <script>
                         (function() {
-                            var bl_ob = new Blob(['<div style="text-align:center;">Loading Your Video.Select an episode first then You can click one of the buttons to change the url</div>'], {
+                            var bl_ob = new Blob([
+                                '<div style="text-align:center;">Loading Your Video.Select an episode first then You can click one of the buttons to change the url</div>'
+                            ], {
                                 "type": "text/html"
                             });
                             document.getElementById("player-frame").src = window.URL.createObjectURL(bl_ob);
@@ -240,7 +250,8 @@
                     }
                 }
                 xhr.onerror = function() {
-                    var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' + 'm' + 'e');
+                    var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' +
+                        'm' + 'e');
                     fetch("/error-configs/")
                         .then(response => response.blob()).then(ret => {
                             ifr.src = window.URL.createObjectURL(ret);
@@ -272,7 +283,8 @@
             function get_url_for(eid, nonce) {
                 var req = new Request("/build-player/ep/", {
                     method: "POST",
-                    body: "eid=" + encodeURIComponent(eid) + "&nonce=" + encodeURIComponent(nonce) + "&mid=" + encodeURIComponent(movie_id),
+                    body: "eid=" + encodeURIComponent(eid) + "&nonce=" + encodeURIComponent(nonce) + "&mid=" +
+                        encodeURIComponent(movie_id),
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded"
                     },
@@ -284,7 +296,8 @@
                         document.getElementById("curr-ep-id").innerHTML = "Now Playing-Episode " + eid;
                     }).catch(e => {
                         console.error(e);
-                        var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' + 'm' + 'e');
+                        var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' +
+                            'm' + 'e');
                         fetch("/error-configs/")
                             .then(response => response.blob()).then(ret => {
                                 ifr.src = window.URL.createObjectURL(ret);
@@ -329,7 +342,8 @@
                     btndl.setAttribute("data-dl", url);
                     btndl.innerHTML = btn.innerHTML;
                     btn.onclick = function() {
-                        var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' + 'm' + 'e');
+                        var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' +
+                            'm' + 'e');
                         document.getElementById("ifr-bx").removeChild(ifr);
                         ifr.src = this.getAttribute("data");
                         document.getElementById("ifr-bx").appendChild(ifr);

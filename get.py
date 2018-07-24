@@ -5,11 +5,9 @@ import random
 import re
 import time
 import uuid
-from urllib.parse import quote, unquote
+from urllib.parse import quote
 
 import psycopg2
-import requests
-from bs4 import BeautifulSoup as bs
 from flask import (
     Flask,
     Response,
@@ -19,17 +17,18 @@ from flask import (
     request,
     send_from_directory,
     session,
-    url_for,
 )
 from flask_compress import Compress
 from flask_sqlalchemy import SQLAlchemy
 from htmlmin.minify import html_minify
 from jac.contrib.flask import JAC
 
-import streamsites as st
 from dbmanage import req_db
+from flask_tools import flaskUtils
 
 app = Flask(__name__)
+flaskUtils(app)
+app.config["FORCE_HTTPS_ON_PROD"] = True
 Compress(app)
 app.config["COMPRESSOR_DEBUG"] = app.config.get("DEBUG")
 app.config["COMPRESSOR_OUTPUT_DIR"] = "./static/jsbin"
@@ -44,12 +43,14 @@ try:
             dburl = f.read().strip()
 except FileNotFoundError:
     raise Exception(
-        "No DB url specified try add it to the environment or create a .dbinfo_ file with the url"
+        "No DB url specified try add it to the environment or create a \
+        .dbinfo_ file with the url"
     )
 app.config["SQLALCHEMY_DATABASE_URI"] = dburl
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3343.3 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
+                    (KHTML, like Gecko) Chrome/66.0.3343.3 Safari/537.36"
 
 
 class tvData(db.Model):
@@ -117,17 +118,6 @@ class deadLinks(db.Model):
 
     def __repr__(self):
         return "<Name %r>" % self.movieid
-
-
-@app.before_request
-def https():
-    if (
-        request.endpoint in app.view_functions
-        and not request.is_secure
-        and "127.0.0.1" not in request.url
-        and not "localhost" in request.url
-    ):
-        return redirect(request.url.replace("http://", "https://"), code=301)
 
 
 @app.route("/robots.txt")
@@ -266,7 +256,7 @@ def get_all():
                     res = make_response(json.dumps(cached_data.get("data")))
                     res.headers["X-Sent-Cached"] = True
                     return res
-            except:  # File manually emptied
+            except json.decoder.JSONDecodeError:  # File manually emptied
                 pass
     urls = tvData.query.all()
     random.shuffle(urls)
@@ -385,4 +375,3 @@ def redir():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
-

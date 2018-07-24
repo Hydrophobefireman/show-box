@@ -15,10 +15,14 @@ def main_(term=None, s_url=None):
     ua = "Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US) AppleWebKit/604.1.38 (KHTML, like Gecko) Chrome/68.0.3325.162"
     print("[debug]Fetching:\n", url)
     basic_headers = {
-        "User-Agent": ua,
-        "Upgrade-Insecure-Requests": "1",
-        "dnt": '1',
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
+        "User-Agent":
+        ua,
+        "Upgrade-Insecure-Requests":
+        "1",
+        "dnt":
+        '1',
+        "Accept":
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
     }
     sess = requests.Session()
     htm = sess.get(url, headers=basic_headers, allow_redirects=True)
