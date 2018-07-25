@@ -265,8 +265,8 @@
                 nores_()
             }
             var i = 0;
+            document.getElementById("skelly").style.display = 'none';
             for (; i < names["movies"]["length"]; i++) {
-                document.getElementById("skelly").style.display = 'none';
                 var img = document.createElement("img");
                 img.style.backgroundColor = '#e3e3e3';
                 gen_img(img, names["movies"][i]["thumb"]);
