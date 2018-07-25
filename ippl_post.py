@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup as bs
 import dbmanage
 import upload
 
-
+# Uses post requests
 class colors:
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
@@ -36,7 +36,6 @@ def get_(url, v=True, n=1, season=0):
     )
     print(colors.OKBLUE + "[debug]" + colors.ENDC + "Fetching:\n", url)
     basic_headers = {
-        "Accept-Encoding": "gzip,deflate",
         "User-Agent": ua,
         "Upgrade-Insecure-Requests": "1",
         "dnt": "1",
@@ -47,6 +46,10 @@ def get_(url, v=True, n=1, season=0):
     dict_print(basic_headers, v=v)
     page = sess.get(url, headers=basic_headers, allow_redirects=True)
     to_screen([colors.OKBLUE + "[debug]" + colors.ENDC + "Page URL:", page.url], v)
+    to_screen(
+        [colors.OKBLUE + "[debug]" + colors.ENDC + "Cookie Jar For %s:" % (page.url)], v
+    )
+    dict_print(dict(page.cookies), v)
     soup = bs(page.text, "html.parser")
     to_screen(["\n" + colors.OKBLUE + "[debug]" + colors.ENDC + "Finding Title"], v)
     title = soup.find("input", attrs={"name": "movies_title"}).attrs["value"]
@@ -153,37 +156,35 @@ def get_(url, v=True, n=1, season=0):
             sleep(1)
             to_screen([colors.OKBLUE + "[debug]" + colors.ENDC + "Recieved:"], v)
             dict_print(b, v)
-            reqdata = urlencode(
-                {
+            ret = sess.post(
+                host + "ip.file/swf/ipplayer/ipplayer.php",
+                cookies=page.cookies,
+                headers=basic_headers,
+                data={
                     "u": b["s"],
                     "w": "100%25",
                     "h": "500",
                     "s": to_send["data-server"],
                     "n": "0",
-                }
-            )
-            print(
-                colors.OKBLUE
-                + "[debug]Sending a GET request with parameters TO:"
-                + colors.ENDC
-                + host
-                + "ip.file/swf/ipplayer/ipplayer.php"
-            )
-            # looks like they are taking advantage of cloudfares caching..instead or processing data everytime
-            ret = sess.get(
-                host + "ip.file/swf/ipplayer/ipplayer.php?" + reqdata,
-                cookies=page.cookies,
-                headers=basic_headers,
+                },
             )
             res = json.loads(ret.text)
+            to_screen(
+                [
+                    colors.OKBLUE
+                    + "[debug]"
+                    + colors.ENDC
+                    + "Cookie Jar For %s:%s\n" % (ret.url, dict(ret.cookies))
+                ],
+                v,
+            )
             to_screen([colors.OKBLUE + "[debug]" + colors.ENDC + "Recieved Data:"], v)
             dict_print(res, v)
 
             url_rec = res.get("data")
             if url_rec:
                 if "netu.tv" in url_rec or "hqq.tv" in url_rec:
-                    # Garbage website..mines crypto and stuff ,terrible hosting
-                    #  videos are usually deleted and other stuff
+                    # Garbage website..mines crypto and stuff ,terrible hosting videos are usually deleted and other stuff
                     # stay away from this abomination of video hosting
                     print(
                         colors.FAIL

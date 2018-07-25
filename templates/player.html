@@ -284,12 +284,17 @@
                     console.log(e);
                 }
             }
+            var html_data =
+                '<div style="margin-left:auto;margin-right:auto;text-align:center">Loading The Video</div>'
+            var __notif__ = new Blob([html_data], {
+                type: "text/html"
+            });
+            var blobbed_notif = window.URL.createObjectURL(__notif__);
 
             function get_url_for(eid, nonce) {
                 var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' +
                     'm' + 'e');
-                ifr.src =
-                    'data:text/html;utf-8,<div style="margin-left:auto;margin-right:auto;text-align:center">Loading The Video</div>';
+                ifr.src = blobbed_notif;
                 var req = new Request("/build-player/ep/", {
                     method: "POST",
                     body: "eid=" + encodeURIComponent(eid) + "&nonce=" + encodeURIComponent(nonce) + "&mid=" +

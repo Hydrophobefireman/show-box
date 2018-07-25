@@ -29,6 +29,7 @@ static/jsbin/
 
 #CUSTOM
 .db-cache--all
+.player-cache/
 js-obfs.js
 js-player.obfs.js
 js-obfuscated.js
@@ -40,6 +41,7 @@ api.py
 *.cloudinary
 *.dbinfo_
 .dbinfo_
+*.ep-cache
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.

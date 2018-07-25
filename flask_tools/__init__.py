@@ -50,11 +50,12 @@ class flaskUtils(object):
                     or 'Content-Encoding' in res.headers):
                 return res
             res.direct_passthrough = False
-
+            uncompressed_length = res.content_length
             res.set_data(brotli_content(res))
             res.headers['Content-Encoding'] = 'br'
             res.headers['Content-Length'] = res.content_length
-
+            res.headers['X-Compression-Percentage'] = int(
+                (res.content_length / uncompressed_length) * 100)
             vary = res.headers.get('Vary')
             if vary:
                 if 'accept-encoding' not in vary.lower():

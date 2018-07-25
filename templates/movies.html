@@ -274,7 +274,7 @@
                 dv["className"] = "img-box";
                 var atag = document.createElement("a");
                 atag["href"] = encodeURI("/movie/" + names["movies"][i]["id"] + "/" + names["movies"][i]["movie"].replace(
-                    /[^\w]/, "-") + "?id=" + btoa(Math.random()).slice(0, 8));
+                    /[^\w]/g, "-") + "?id=" + btoa(Math.random()).slice(0, 8));
                 atag.appendChild(img);
                 dv.appendChild(atag);
                 img.className = 'display-img';

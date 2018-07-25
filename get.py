@@ -44,7 +44,8 @@ try:
 except FileNotFoundError:
     raise Exception(
         "No DB url specified try add it to the environment or create a \
-        .dbinfo_ file with the url")
+        .dbinfo_ file with the url"
+    )
 app.config["SQLALCHEMY_DATABASE_URI"] = dburl
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
@@ -74,11 +75,19 @@ class tvData(db.Model):
 
 def generate_id():
     lst_ = list(
-        base64.urlsafe_b64encode((str(uuid.uuid1()) + str(
-            uuid.uuid4()) + uuid.uuid4().hex + str(time.time())).encode())
-        .decode().replace("=", "--"))
+        base64.urlsafe_b64encode(
+            (
+                str(uuid.uuid1())
+                + str(uuid.uuid4())
+                + uuid.uuid4().hex
+                + str(time.time())
+            ).encode()
+        )
+        .decode()
+        .replace("=", "--")
+    )
     random.shuffle(lst_)
-    return "".join(lst_)[:gen_rn()]
+    return "".join(lst_)[: gen_rn()]
 
 
 def gen_rn():
@@ -114,9 +123,8 @@ class deadLinks(db.Model):
 @app.route("/robots.txt")
 def check__():
     return send_from_directory(
-        os.path.join(app.root_path, "static"),
-        "robots.txt",
-        mimetype="text/plain")
+        os.path.join(app.root_path, "static"), "robots.txt", mimetype="text/plain"
+    )
 
 
 @app.route("/")
@@ -138,8 +146,7 @@ def report_dead():
         return "No movie associated with given id"
     thumb = meta_.thumb
     title = meta_.moviedisplay
-    return render_template(
-        "link-report.html", m_id=m_id, title=title, thumb=thumb)
+    return render_template("link-report.html", m_id=m_id, title=title, thumb=thumb)
 
 
 @app.route("/submit/report/", methods=["POST"])
@@ -158,8 +165,7 @@ def parse_report():
 
 @app.route("/search")
 def send_m():
-    if request.args.get("q") is None or not re.sub(r"[^\w]", "",
-                                                   request.args.get("q")):
+    if request.args.get("q") is None or not re.sub(r"[^\w]", "", request.args.get("q")):
         return "Specify a term!"
     return html_minify(render_template("movies.html", q=request.args.get("q")))
 
@@ -194,11 +200,9 @@ def serchs():
     q = re.sub(r"\s", "", request.form["q"]).lower()
     urls = tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q))).all()
     for url in urls:
-        json_data["movies"].append({
-            "movie": url.moviedisplay,
-            "id": url.mid,
-            "thumb": url.thumb
-        })
+        json_data["movies"].append(
+            {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
+        )
     if len(json_data["movies"]) == 0:
         return json.dumps({"no-res": True})
     return json.dumps(json_data)
@@ -212,9 +216,8 @@ def err_configs():
 @app.route("/favicon.ico")
 def favicon():
     return send_from_directory(
-        os.path.join(app.root_path, "static"),
-        "favicon.ico",
-        mimetype="image/x-icon")
+        os.path.join(app.root_path, "static"), "favicon.ico", mimetype="image/x-icon"
+    )
 
 
 @app.route("/all/", strict_slashes=False)
@@ -231,10 +234,7 @@ def gen_conf():
         return "lol"
     session["req-all"] = (generate_id() + rns + generate_id())[:20]
     return Response(
-        json.dumps({
-            "id": session["req-all"],
-            "rns": rns
-        }),
+        json.dumps({"id": session["req-all"], "rns": rns}),
         content_type="application/json",
     )
 
@@ -261,11 +261,9 @@ def get_all():
     urls = tvData.query.all()
     random.shuffle(urls)
     for url in urls:
-        json_data["movies"].append({
-            "movie": url.moviedisplay,
-            "id": url.mid,
-            "thumb": url.thumb
-        })
+        json_data["movies"].append(
+            {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
+        )
     if len(json_data["movies"]) == 0:
         return json.dumps({"no-res": True})
     meta_ = {"stamp": time.time(), "data": json_data}
@@ -283,31 +281,59 @@ def s_confs():
         return "No"
     session["req-all"] = (generate_id() + generate_id())[:20]
     return Response(
-        json.dumps({
-            "id": session["req-all"]
-        }),
-        content_type="application/json")
+        json.dumps({"id": session["req-all"]}), content_type="application/json"
+    )
 
 
 @app.route("/movie/<mid>/<mdata>/")
 def send_movie(mid, mdata):
     if mid is None:
         return "Nope"
+    session["req_nonce"] = generate_id()
     meta_ = tvData.query.filter_by(mid=mid).first()
+    if os.path.isdir(".player-cache"):
+        if os.path.isfile(os.path.join(".player-cache", mid + ".ir")):
+            with open(os.path.join(".player-cache", mid + ".ir"), "r") as f:
+                try:
+                    data = json.loads(f.read())
+                    res = make_response(
+                        html_minify(
+                            render_template(
+                                "player.html",
+                                nonce=session["req_nonce"],
+                                movie=data["movie_name"],
+                                og_url=request.url,
+                                og_image=data["thumbnail"],
+                            )
+                        )
+                    )
+                    res.headers["X-Sent-Cached"] = True
+                    print("Sending Cached Data")
+                    return res
+                except:
+                    pass
+    else:
+        os.mkdir(".player-cache")
     if meta_ is None:
         return "No movie associated with given id"
     movie_name = meta_.moviedisplay
     thumbnail = meta_.thumb
-    r_n = random.randint(4, 25)
-    session["req_nonce"] = (str(uuid.uuid1()) + str(uuid.uuid4()))[:r_n]
-    return html_minify(
-        render_template(
-            "player.html",
-            nonce=session["req_nonce"],
-            movie=movie_name,
-            og_url=request.url,
-            og_image=thumbnail,
-        ))
+    with open(os.path.join(".player-cache", mid + ".ir"), "w") as f:
+        data_js = {"movie_name": movie_name, "thumbnail": thumbnail}
+        f.write(json.dumps(data_js))
+    res = make_response(
+        html_minify(
+            render_template(
+                "player.html",
+                nonce=session["req_nonce"],
+                movie=movie_name,
+                og_url=request.url,
+                og_image=thumbnail,
+            )
+        )
+    )
+    res.headers["X-Sent-Cached"] = False
+    return res
 
 
 @app.route("/data-parser/plugins/player/", methods=["POST"])
@@ -317,14 +343,41 @@ def plugin():
         return "Lol"
     nonce = generate_id()
     session["req_nonce"] = nonce
+    if os.path.isdir(".player-cache"):
+        if os.path.isfile(os.path.join(".player-cache", mid + ".fr")):
+            with open(os.path.join(".player-cache", mid + ".fr"), "r") as f:
+                try:
+                    data = json.loads(f.read())
+                    json_data = {
+                        "season": data["season"],
+                        "episode_meta": data["episode_meta"],
+                        "tempid": nonce,
+                        "utf-8": "✓",
+                    }
+                    res = make_response(json_data)
+                    res.headers["Content-Type"] = "application/json"
+                    res.headers["X-Sent-Cached"] = True
+                    print("Sending Cached Data")
+                    return res
+                except:
+                    pass
+    else:
+        os.mkdir(".player-cache")
     data = tvData.query.filter_by(mid=mid).first()
-    json_data = {
-        "season": data.season,
-        "episode_meta": len(data.episodes),
-        "tempid": nonce,
-        "utf-8": "✓",
-    }
-    return json.dumps(json_data)
+    json_data = json.dumps(
+        {
+            "season": data.season,
+            "episode_meta": len(data.episodes),
+            "tempid": nonce,
+            "utf-8": "✓",
+        }
+    )
+    with open(os.path.join(".player-cache", mid + ".fr"), "w") as f:
+        f.write(json_data)
+    res = make_response(json_data)
+    res.headers["X-Sent-Cached"] = False
+    res.headers["Content-Type"] = "application/json"
+    return res
 
 
 @app.route("/build-player/ep/", methods=["POST"])
