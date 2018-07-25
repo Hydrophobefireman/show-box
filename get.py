@@ -359,7 +359,7 @@ def plugin():
                     res.headers["X-Sent-Cached"] = True
                     print("Sending Cached Data")
                     return res
-                except Exception as e:
+                except:
                     pass
     else:
         os.mkdir(".player-cache")
