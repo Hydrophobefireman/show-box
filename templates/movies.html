@@ -69,7 +69,8 @@
             text-align: center;
         }
         
-        #content {
+        #content,
+        #skelly {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
@@ -118,6 +119,23 @@
             margin-top: 20px;
         }
         
+        .img-skelly {
+            margin: 15px;
+            width: 150px;
+            height: 200px;
+            background-color: #e3e3e3;
+            border-radius: 15px
+        }
+        
+        .title-skelly {
+            width: 150px;
+            margin: 15px;
+            border-radius: 20px;
+            height: 20px;
+            background-color: #e3e3e3;
+            margin-top: 5px
+        }
+        
         .ipg0 {
             -moz-border-radius: 5px;
             -webkit-border-radius: 5px;
@@ -157,8 +175,12 @@
 
 <body>
     <div style="position:fixed;width:100%;top:0;margin-left:auto;margin-right:auto;padding: 8px;overflow: hidden;background: #333;text-align: center">
-        <a class=links href='/'><span class='h-link'>Home Page</span></a>
-        <a class=links id='all' href=/all><span class='h-link'>All movies</span></a>
+        <a class=links href='/'>
+            <span class='h-link'>Home Page</span>
+        </a>
+        <a class=links id='all' href=/all>
+            <span class='h-link'>All movies</span>
+        </a>
     </div>
     <script>
         var params = "q=" + encodeURIComponent("{{q}}");
@@ -172,14 +194,34 @@
                         <input type="submit" id=fr-ui7-2-g11g class=submit-button style="width:10%;" value='Go'>
                     </form>
                 </div>
-                <div id="content"></div>
+                <div id="content">
+                    <div id=skelly>
+                        <div>
+                            <div class=img-skelly></div>
+                            <div class=title-skelly></div>
+                        </div>
+                        <div>
+                            <div class=img-skelly></div>
+                            <div class=title-skelly></div>
+                        </div>
+                        <div>
+                            <div class=img-skelly></div>
+                            <div class=title-skelly></div>
+                        </div>
+                        <div>
+                            <div class=img-skelly></div>
+                            <div class=title-skelly></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div id=no-res style="display: none;margin-top:50px;">
         <div class=center_stuff>
             <div>
-                <span>Sorry We Couldn't Find the resource you requested for,you can create a manual request by going <a href='/help-us'>here</a> and we will add the movie ASAP</span>
+                <span>Sorry We Couldn't Find the resource you requested for,you can create a manual request by going
+                    <a href='/help-us'>here</a> and we will add the movie ASAP</span>
                 <div id=contentnt>
                     <div id=miannt>
                         <br>
@@ -224,13 +266,15 @@
             }
             var i = 0;
             for (; i < names["movies"]["length"]; i++) {
+                document.getElementById("skelly").style.display = 'none';
                 var img = document.createElement("img");
-                img["src"] = "/static" + "/loadi" + "ng.jpg";
+                img.style.backgroundColor = '#e3e3e3';
                 gen_img(img, names["movies"][i]["thumb"]);
                 var dv = document.createElement("div");
                 dv["className"] = "img-box";
                 var atag = document.createElement("a");
-                atag["href"] = encodeURI("/movie/" + names["movies"][i]["id"] + "/" + names["movies"][i]["movie"].replace(/(\(|\)|\s)/g, "-") + "?id=" + btoa(Math.random()).slice(0, 8));
+                atag["href"] = encodeURI("/movie/" + names["movies"][i]["id"] + "/" + names["movies"][i]["movie"].replace(
+                    /[^\w]/, "-") + "?id=" + btoa(Math.random()).slice(0, 8));
                 atag.appendChild(img);
                 dv.appendChild(atag);
                 img.className = 'display-img';
@@ -245,14 +289,16 @@
         function gen_img(img, imgURL) {
             var compat_url = window["URL"] || window["webkitURL"];
             var req = new Request(imgURL);
-            fetch(req)
-                .then(response => response.blob())
-                .then(blob => {
-                    img.src = compat_url.createObjectURL(blob);
-                });
             img.onload = function() {
                 compat_url.revokeObjectURL(this.src)
             }
+            fetch(req)
+                .then(response => response.blob())
+                .then(blob => compat_url.createObjectURL(blob))
+                .then(res => {
+                    img.src = res;
+                    img.style.backgroundColor = '';
+                });
         };
     </script>{% endcompress %}
 </body>

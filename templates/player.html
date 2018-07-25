@@ -182,6 +182,9 @@
                     <div id="hdn-info" style="display: none">We Will download the video from the website or extract the mp4 url for you to watch the video without any ads at all!</div>
                     <div id=buttons-row style="display: none;margin-bottom: 20px;">
                         <div class=info>Select the site</div>
+                        <div class=site-name>These Links are for Episode:
+                            <span id=download-episode-name></span>
+                        </div>
                         <button class="ipg_s" id="dl-s1">source1</button>
                         <button class="ipg_s" id="dl-s2">source2</button>
                         <button class="ipg_s" id="dl-s3">source3</button>
@@ -300,6 +303,7 @@
                     .then(res => res.text()).then(ret => {
                         build_player(ret, "dummy-key-authorised")
                         document.getElementById("curr-ep-id").innerHTML = "Now Playing-Episode " + eid;
+                        document.getElementById("download-episode-name").innerHTML = eid;
                     }).catch(e => {
                         console.error(e);
                         fetch("/error-configs/")

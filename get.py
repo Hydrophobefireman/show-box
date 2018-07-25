@@ -64,7 +64,7 @@ class tvData(db.Model):
         self.mid = generate_id()
         self.season = season
         self.episodes = episodes
-        self.movie = re.sub(r"\s", "", movie.lower())
+        self.movie = re.sub(r"[^\w]", "", movie.lower())
         self.moviedisplay = movie
         self.thumb = thumb
 

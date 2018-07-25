@@ -27,7 +27,7 @@ class flaskUtils(object):
         self.app = app
 
         @app.before_request
-        def https_and_brotli_check():
+        def https():
             request.process_time = time.time()
             if (app.config.get("FORCE_HTTPS_ON_PROD")
                     and request.endpoint in app.view_functions
@@ -41,7 +41,6 @@ class flaskUtils(object):
         def after_req_headers(res):
             res.headers['X-Process-Time'] = time.time() - request.process_time
             accept_encoding = request.headers.get('Accept-Encoding', '')
-            res.headers["X-Powered-By"] = "Flask"
             res.headers["X-UID"] = str(uuid.uuid4())
             if (res.mimetype not in config['COMPRESS_MIMETYPES']
                     or 'br' not in accept_encoding.lower()
@@ -59,7 +58,7 @@ class flaskUtils(object):
             vary = res.headers.get('Vary')
             if vary:
                 if 'accept-encoding' not in vary.lower():
-                    res.headers['Vary'] = '{}, Accept-Encoding'.format(vary)
+                    res.headers['Vary'] = '%s, Accept-Encoding' % (vary)
             else:
                 res.headers['Vary'] = 'Accept-Encoding'
 
