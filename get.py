@@ -197,7 +197,7 @@ def google_():
 def serchs():
     json_data = {}
     json_data["movies"] = []
-    q = re.sub(r"\s", "", request.form["q"]).lower()
+    q = re.sub(r"[^\w]", "", request.form["q"]).lower()
     urls = tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q))).all()
     for url in urls:
         json_data["movies"].append(
@@ -290,10 +290,9 @@ def send_movie(mid, mdata):
     if mid is None:
         return "Nope"
     session["req_nonce"] = generate_id()
-    meta_ = tvData.query.filter_by(mid=mid).first()
     if os.path.isdir(".player-cache"):
-        if os.path.isfile(os.path.join(".player-cache", mid + ".ir")):
-            with open(os.path.join(".player-cache", mid + ".ir"), "r") as f:
+        if os.path.isfile(os.path.join(".player-cache", mid + "-thumbdata.json")):
+            with open(os.path.join(".player-cache", mid + "-thumbdata.json"), "r") as f:
                 try:
                     data = json.loads(f.read())
                     res = make_response(
@@ -314,11 +313,12 @@ def send_movie(mid, mdata):
                     pass
     else:
         os.mkdir(".player-cache")
+    meta_ = tvData.query.filter_by(mid=mid).first()
     if meta_ is None:
         return "No movie associated with given id"
     movie_name = meta_.moviedisplay
     thumbnail = meta_.thumb
-    with open(os.path.join(".player-cache", mid + ".ir"), "w") as f:
+    with open(os.path.join(".player-cache", mid + "-thumbdata.json"), "w") as f:
         data_js = {"movie_name": movie_name, "thumbnail": thumbnail}
         f.write(json.dumps(data_js))
     res = make_response(
@@ -344,8 +344,8 @@ def plugin():
     nonce = generate_id()
     session["req_nonce"] = nonce
     if os.path.isdir(".player-cache"):
-        if os.path.isfile(os.path.join(".player-cache", mid + ".fr")):
-            with open(os.path.join(".player-cache", mid + ".fr"), "r") as f:
+        if os.path.isfile(os.path.join(".player-cache", mid + "-fulldata.json")):
+            with open(os.path.join(".player-cache", mid + "-fulldata.json"), "r") as f:
                 try:
                     data = json.loads(f.read())
                     json_data = {
@@ -354,26 +354,26 @@ def plugin():
                         "tempid": nonce,
                         "utf-8": "✓",
                     }
-                    res = make_response(json_data)
+                    res = make_response(json.dumps(json_data))
                     res.headers["Content-Type"] = "application/json"
                     res.headers["X-Sent-Cached"] = True
                     print("Sending Cached Data")
                     return res
-                except:
+                except Exception as e:
                     pass
     else:
         os.mkdir(".player-cache")
     data = tvData.query.filter_by(mid=mid).first()
-    json_data = json.dumps(
-        {
-            "season": data.season,
-            "episode_meta": len(data.episodes),
-            "tempid": nonce,
-            "utf-8": "✓",
-        }
-    )
-    with open(os.path.join(".player-cache", mid + ".fr"), "w") as f:
-        f.write(json_data)
+    common_ = {
+        "season": data.season,
+        "episode_meta": len(data.episodes),
+        "tempid": nonce,
+        "utf-8": "✓",
+    }
+    meta_data = {**common_, "episodes": data.episodes}
+    json_data = json.dumps(common_)
+    with open(os.path.join(".player-cache", mid + "-fulldata.json"), "w") as f:
+        f.write(json.dumps(meta_data))
     res = make_response(json_data)
     res.headers["X-Sent-Cached"] = False
     res.headers["Content-Type"] = "application/json"
@@ -384,17 +384,33 @@ def plugin():
 def send_ep_data():
     eid = request.form["eid"]
     if request.form["nonce"] != session["req_nonce"]:
-        return "Lol"
+        return "LuL"
     episode = request.form["mid"]
-    data = tvData.query.filter_by(mid=episode).first()
-    episodes = data.episodes
+    if os.path.isdir(".player-cache") and os.path.isfile(
+        os.path.join(".player-cache", episode + "-fulldata.json")
+    ):
+        with open(os.path.join(".player-cache", episode + "-fulldata.json"), "r") as f:
+            try:
+                data = json.loads(f.read())
+                episodes = data["episodes"]
+                print("Cached Response")
+                header = True
+            except:
+                pass
+    else:
+        header = False
+        data = tvData.query.filter_by(mid=episode).first()
+        episodes = data.episodes
     urls = episodes.get(int(eid)) or episodes.get(eid)
     json_data = {
         "url": str(urls[0]).replace("http:", "https:"),
         "alt1": str(urls[1]).replace("http:", "https:"),
         "alt2": str(urls[2]).replace("http:", "https:"),
     }
-    return json.dumps(json_data)
+    res = make_response(json.dumps(json_data))
+    res.headers["Content-Type"] = "application/json"
+    res.headers["X-Sent-Cached"] = header
+    return res
 
 
 @app.route("/no-result/")
