@@ -291,8 +291,8 @@ def send_movie(mid, mdata):
         return "Nope"
     session["req_nonce"] = generate_id()
     if os.path.isdir(".player-cache"):
-        if os.path.isfile(os.path.join(".player-cache", mid + "-thumbdata.json")):
-            with open(os.path.join(".player-cache", mid + "-thumbdata.json"), "r") as f:
+        if os.path.isfile(os.path.join(".player-cache", mid + ".json")):
+            with open(os.path.join(".player-cache", mid + ".json"), "r") as f:
                 try:
                     data = json.loads(f.read())
                     res = make_response(
@@ -318,8 +318,14 @@ def send_movie(mid, mdata):
         return "No movie associated with given id"
     movie_name = meta_.moviedisplay
     thumbnail = meta_.thumb
-    with open(os.path.join(".player-cache", mid + "-thumbdata.json"), "w") as f:
-        data_js = {"movie_name": movie_name, "thumbnail": thumbnail}
+    with open(os.path.join(".player-cache", mid + ".json"), "w") as f:
+        data_js = {
+            "movie_name": movie_name,
+            "thumbnail": thumbnail,
+            "episodes": meta_.episodes,
+            "episode_meta": len(meta_.episodes),
+            "season": meta_.season,
+        }
         f.write(json.dumps(data_js))
     res = make_response(
         html_minify(
@@ -344,8 +350,8 @@ def plugin():
     nonce = generate_id()
     session["req_nonce"] = nonce
     if os.path.isdir(".player-cache"):
-        if os.path.isfile(os.path.join(".player-cache", mid + "-fulldata.json")):
-            with open(os.path.join(".player-cache", mid + "-fulldata.json"), "r") as f:
+        if os.path.isfile(os.path.join(".player-cache", mid + ".json")):
+            with open(os.path.join(".player-cache", mid + ".json"), "r") as f:
                 try:
                     data = json.loads(f.read())
                     json_data = {
@@ -364,15 +370,15 @@ def plugin():
     else:
         os.mkdir(".player-cache")
     data = tvData.query.filter_by(mid=mid).first()
-    common_ = {
-        "season": data.season,
-        "episode_meta": len(data.episodes),
-        "tempid": nonce,
-        "utf-8": "✓",
+    common_ = {"season": data.season, "episode_meta": len(data.episodes)}
+    meta_data = {
+        **common_,
+        "episodes": data.episodes,
+        "movie_name": data.moviedisplay,
+        "thumbnail": data.thumbnail,
     }
-    meta_data = {**common_, "episodes": data.episodes}
-    json_data = json.dumps(common_)
-    with open(os.path.join(".player-cache", mid + "-fulldata.json"), "w") as f:
+    json_data = json.dumps({**common_, "tempid": nonce, "utf-8": "✓"})
+    with open(os.path.join(".player-cache", mid + ".json"), "w") as f:
         f.write(json.dumps(meta_data))
     res = make_response(json_data)
     res.headers["X-Sent-Cached"] = False
@@ -387,9 +393,9 @@ def send_ep_data():
         return "LuL"
     episode = request.form["mid"]
     if os.path.isdir(".player-cache") and os.path.isfile(
-        os.path.join(".player-cache", episode + "-fulldata.json")
+        os.path.join(".player-cache", episode + ".json")
     ):
-        with open(os.path.join(".player-cache", episode + "-fulldata.json"), "r") as f:
+        with open(os.path.join(".player-cache", episode + ".json"), "r") as f:
             try:
                 data = json.loads(f.read())
                 episodes = data["episodes"]
