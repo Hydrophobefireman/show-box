@@ -35,7 +35,7 @@ class flaskUtils(object):
                     and "127.0.0.1" not in request.url
                     and "localhost" not in request.url):
                 return redirect(
-                    request.url.replace("http://", "https://"), code=301)
+                    request.url.replace("http://", "https://"), code=307)
 
         @app.after_request
         def after_req_headers(res):
