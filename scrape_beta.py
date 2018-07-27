@@ -16,14 +16,15 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 
 def scrape(url):
     base_url = url
-    warn("Some Go Movies url need a /watching.html in the end. Remember to add it if needed")
+    warn(
+        "Some Go Movies url need a /watching.html in the end. Remember to add it if needed"
+    )
     req = requests.get(url, headers={"User-Agent": USER_AGENT})
     page = req.text
-    soup = bs(page, 'html.parser')
-    content_div = soup.findAll(
-        attrs={"class": 'les-content'})
+    soup = bs(page, "html.parser")
+    content_div = soup.findAll(attrs={"class": "les-content"})
     if len(content_div) == 0:
-        content_div = soup.findAll(attrs={"id": 'les-content'})
+        content_div = soup.findAll(attrs={"id": "les-content"})
     dv = []
     for div in content_div:
         data = les_content_parser(div)
@@ -31,8 +32,7 @@ def scrape(url):
             dv += data
     if dv:
         return dv
-    url = re.search(r"var\s*locations\s?=\s?.*?(?<=;)",
-                    url, re.IGNORECASE)
+    url = re.search(r"var\s*locations\s?=\s?.*?(?<=;)", url, re.IGNORECASE)
     if url:
         return [url.group()]
     urls = iframe_src_or_none(soup)
@@ -43,7 +43,7 @@ def scrape(url):
         return ippl_try
     regs = re.search(r"id:\s?\"(?P<id>.*?)\"", page)
     if regs:
-        v_id = regs.group('id')
+        v_id = regs.group("id")
         print(v_id)
         data_r = try_get_ajax(base_url, v_id)
         if data_r:
@@ -71,34 +71,33 @@ def try_ipplayer_search(url):
 
 def try_get_ajax(url, id_):
     parsed_url = urlparse(url)
-    host = "http://"+parsed_url.netloc+"/"
-    url1 = host+"ajax/movie_episodes/"+id_
+    host = "http://" + parsed_url.netloc + "/"
+    url1 = host + "ajax/movie_episodes/" + id_
     basic_headers = {
         "User-Agent": USER_AGENT,
         "Upgrade-Insecure-Requests": "1",
-        "dnt": '1',
+        "dnt": "1",
         "referer": url,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
     }
     data = requests.Session().get(url1, headers=basic_headers).text
     print("[debug]Recieved Data of length:", len(data))
     try:
-        htm = json.loads(data)['html']
+        htm = json.loads(data)["html"]
     except:
         return False
-    soup = bs(htm, 'html.parser')
+    soup = bs(htm, "html.parser")
     srcs = []
-    divs = soup.findAll('a', attrs={"data-id": True})
+    divs = soup.findAll("a", attrs={"data-id": True})
     for div in divs:
         d_id = div.attrs.get("data-id")
-        url_2 = host+"ajax/movie_embed/"+d_id
+        url_2 = host + "ajax/movie_embed/" + d_id
         print("[debug]Requesting:", url_2)
         try:
-            txt = json.loads(requests.Session().get(
-                url_2, headers=basic_headers).text)
+            txt = json.loads(requests.Session().get(url_2, headers=basic_headers).text)
             print("[debug]Recieved:", txt)
-            if str(txt['status']) == '1':
-                srcs.append(txt['src'])
+            if str(txt["status"]) == "1":
+                srcs.append(txt["src"])
         except Exception as e:
             print(e)
             # raise e
@@ -110,7 +109,7 @@ def try_get_ajax(url, id_):
 
 def les_content_parser(div):
     # Find all urls
-    reg = r'(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+'
+    reg = r"(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+"
     urls = re.findall(reg, str(div))
     valid_urls = [s for s in urls if urlcheck(s)]
     if valid_urls:
@@ -120,9 +119,23 @@ def les_content_parser(div):
 
 
 def urlcheck(url):
-    if re.search(r"^(https?:)?//.*\.?((docs|drive)\.google.com)|video\.google\.com", url, re.IGNORECASE) is not None:
+    if (
+        re.search(
+            r"^(https?:)?//.*\.?((docs|drive)\.google.com)|video\.google\.com",
+            url,
+            re.IGNORECASE,
+        )
+        is not None
+    ):
         return True
-    if re.search(r"^(https?:)?//.*\.?(photos\.google|photos\.app\.goo\.gl)", url, re.IGNORECASE) is not None:
+    if (
+        re.search(
+            r"^(https?:)?//.*\.?(photos\.google|photos\.app\.goo\.gl)",
+            url,
+            re.IGNORECASE,
+        )
+        is not None
+    ):
         return True
     if re.search(r"^(https?:)?//.*\.?estream", url, re.IGNORECASE) is not None:
         return True
@@ -138,7 +151,14 @@ def urlcheck(url):
         return True
     if re.search(r"^(https?:)?//.*\.?megadrive\.", url, re.IGNORECASE) is not None:
         return True
-    if re.search(r"^(https?:)?//(.{3})?\.?(oload|openload|daclips|thevideo|vev.io|streamango|streamago|streamcloud)", url, re.IGNORECASE) is not None:
+    if (
+        re.search(
+            r"^(https?:)?//(.{3})?\.?(oload|openload|daclips|thevideo|vev.io|streamango|streamago|streamcloud)",
+            url,
+            re.IGNORECASE,
+        )
+        is not None
+    ):
         return True
     else:
         return False
@@ -147,26 +167,28 @@ def urlcheck(url):
 def iframe_src_or_none(page):
     iframe = page.findAll("iframe", attrs={"src": True})
     data = []
-    reg = r'(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+'
+    reg = r"(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+"
     for fr in iframe:
         if len(fr.attrs.get("src")) < 1:
             continue
         print("Found an Iframe url")
-        f = fr.attrs['src']
+        f = fr.attrs["src"]
         if "kizyplayer" in f:
             print("Using Kizy Player")
             if f.startswith("//"):
-                f = "http:"+f
+                f = "http:" + f
             source = requests.get(f, headers={"User-Agent": USER_AGENT}).text
             url = re.search(
-                r"addiframe\(('|\")(?P<url>.*?)('|\"),", source, re.IGNORECASE)
+                r"addiframe\(('|\")(?P<url>.*?)('|\"),", source, re.IGNORECASE
+            )
             if url:
-                url = url.group('url')
+                url = url.group("url")
                 if url.startswith("//"):
-                    url = 'http:'+url
+                    url = "http:" + url
                 print("Fetching:", url)
-                source = requests.get(url, headers={
-                    "User-Agent": USER_AGENT, "Referer": f}).text
+                source = requests.get(
+                    url, headers={"User-Agent": USER_AGENT, "Referer": f}
+                ).text
                 urls = re.findall(r"(?s)file:\s?['|\"].*?['|\"],", source)
                 for r in urls:
                     data.append(re.search(reg, r).group())
@@ -180,21 +202,23 @@ def b64_try(source):
     def b64decoder(decoded_links, source):
         print("b64decoder")
         reg = re.search(
-            r"base64.decode\((\"|')(?P<id>.*?)(\"|')\)", source, re.IGNORECASE)
+            r"base64.decode\((\"|')(?P<id>.*?)(\"|')\)", source, re.IGNORECASE
+        )
         if reg:
-            reg = base64.b64decode(
-                reg.group("id").encode()).decode()
+            reg = base64.b64decode(reg.group("id").encode()).decode()
             reg = re.search(
-                r'(?:(?:https?|ftp)?:\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+', reg).group()
+                r"(?:(?:https?|ftp)?:\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+", reg
+            ).group()
             decoded_links.append(reg)
+
     try:
         decoded_links = []
         b64decoder(decoded_links, source)
-        soup = bs(ret, 'html.parser')
+        soup = bs(ret, "html.parser")
         ptags = soup.find_all("p", attrs={"class": "server_play"})
         links = []
         if len(ptags) > 0:
-            print('PTAGS', ptags)
+            print("PTAGS", ptags)
             ptags = ptags[:10]
             for p in ptags:
                 atag = p.findChild("a")
@@ -214,5 +238,5 @@ def b64_try(source):
         return False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(scrape(input("url:")))

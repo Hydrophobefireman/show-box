@@ -54,10 +54,16 @@
     <div style='margin-left: auto;margin-right: auto;text-align: center;'>
         <div>
             <div style="margin-left:auto;margin-right:auto;padding: 8px;overflow: hidden;background: #333;text-align: center">
-                <a class=links href='/'><span class='h-link'>Home Page</span></a>
-                <a class=links id='all' href=/all><span class='h-link'>All TV Series</span></a>
+                <a class=links href='/'>
+                    <span class='h-link'>Home Page</span>
+                </a>
+                <a class=links id='all' href=/all>
+                    <span class='h-link'>All TV Series</span>
+                </a>
             </div>
             <div id=report-box></div>
+            <div>Type in The episode number</div>
+            <input id=episode-name>
             <button class=submit-button id=sbmit-report style=margin-top:15px;>Submit Report</button>
             <div id=sub-success-error style=margin:20px;>
 
@@ -81,20 +87,26 @@
                 var repo = document.getElementById("report-box")
                 repo.appendChild(img);
                 var txtel = document.createElement("div");
-                txtel.innerHTML = "Report for movie {{title}}?"
+                txtel.innerHTML = "Report  movie {{title}}?"
                 repo.appendChild(txtel);
 
                 document.getElementById("sbmit-report").onclick = function() {
-                    var report = new Request("/submit/report/", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded"
-                        },
-                        body: "id=" + encodeURIComponent("{{m_id|safe}}")
-                    });
-                    fetch(report).then(response => response.text()).then(ret => {
-                        document.getElementById("sub-success-error").innerHTML = ret;
-                    })
+                    var input_ = document.getElementById("episode-name");
+                    var reg = /^\d+$/;
+                    if (reg.test(input_.value)) {
+                        var report = new Request("/submit/report/", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: "id=" + encodeURIComponent("{{m_id|safe}}")
+                        });
+                        fetch(report).then(response => response.text()).then(ret => {
+                            document.getElementById("sub-success-error").innerHTML = ret;
+                        })
+                    } else {
+                        alert("Invalid Episode Number")
+                    }
                 }
             </script>{% endcompress %}
         </div>

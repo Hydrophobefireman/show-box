@@ -285,7 +285,7 @@
                 }
             }
             var html_data =
-                '<div style="margin-left:auto;margin-right:auto;text-align:center">Loading The Video</div>'
+                '<div style="margin-left:auto;margin-right:auto;text-align:center">Loading The Video</div>';
             var __notif__ = new Blob([html_data], {
                 type: "text/html"
             });
@@ -336,7 +336,8 @@
                     if (url.indexOf("://") > -1) {
                         url = url.replace("http://", "https://");
 
-                    } else if (url.indexOf("//") == 0) { /* protocol relative url */
+                    } else if (url.indexOf("//") == 0) {
+                        /* protocol relative url */
                         url = "https:" + url;
                     }
                     btn.setAttribute("data", url);
