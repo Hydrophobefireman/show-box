@@ -36,12 +36,12 @@
             display: inline-block;
             text-transform: uppercase
         }
-        
+
         .episode-lists:active {
             background: #333;
             color: #fff;
         }
-        
+
         .ipg0 {
             -moz-border-radius: 5px;
             -webkit-border-radius: 5px;
@@ -61,7 +61,7 @@
             user-select: none;
             margin-top: 20px;
         }
-        
+
         .input_n {
             -moz-border-radius: 15px;
             -webkit-border-radius: 15px;
@@ -70,7 +70,7 @@
             height: 30px;
             padding: 8px;
         }
-        
+
         .submit-button {
             -moz-border-radius: 5px;
             -webkit-border-radius: 5px;
@@ -90,13 +90,13 @@
             user-select: none;
             margin-top: 20px;
         }
-        
+
         .center_stuff {
             margin-left: auto;
             margin-right: auto;
             text-align: center;
         }
-        
+
         .ipg {
             -moz-border-radius: 20px;
             -webkit-border-radius: 20px;
@@ -118,7 +118,7 @@
             user-select: none;
             margin-top: 20px;
         }
-        
+
         .ipg_s {
             -moz-border-radius: 20px;
             -webkit-border-radius: 20px;
@@ -139,16 +139,16 @@
             user-select: none;
             transition: 0.5s;
         }
-        
+
         .links {
             text-decoration: none;
             color: #fff;
         }
-        
+
         .links:hover {
             border-bottom: 1px solid #e3e3e3;
         }
-        
+
         body {
             font-family: 'Open Sans', 'sans-serif';
             margin: 0px;
@@ -179,15 +179,22 @@
                 <div id="custom-dl-box" style='display: none'>
                     <button class="ipg0" id="custom-dl">Click Here to Use our custom Video Downloader</button>
                     <button class="ipg" id="downloader-info">info</button>
-                    <div id="hdn-info" style="display: none">We Will download the video from the website or extract the mp4 url for you to watch the video without any ads at all!</div>
+                    <div id="hdn-info" style="display: none">We Will download the video from the website or extract the mp4 url for you to watch the video without
+                        any ads at all!</div>
                     <div id=buttons-row style="display: none;margin-bottom: 20px;">
                         <div class=info>Select the site</div>
                         <div class=site-name>These Links are for Episode:
                             <span id=download-episode-name></span>
                         </div>
-                        <button class="ipg_s" id="dl-s1">source1</button>
-                        <button class="ipg_s" id="dl-s2">source2</button>
-                        <button class="ipg_s" id="dl-s3">source3</button>
+                        <a href=# id=link-s1>
+                            <button class="ipg_s" id="dl-s1">source1</button>
+                        </a>
+                        <a href=# id=link-s2>
+                            <button class="ipg_s" id="dl-s2">source2</button>
+                        </a>
+                        <a href=# id=link-s3>
+                            <button class="ipg_s" id="dl-s3">source3</button>
+                        </a>
                     </div>
                 </div>
                 <div id=content>
@@ -195,7 +202,7 @@
                         <iframe id=player-frame src="" style="width: 100%;height: 500px;"></iframe>
                     </div>
                     <script>
-                        (function() {
+                        (function () {
                             var bl_ob = new Blob([
                                 '<div style="text-align:center;">Loading Your Video.Select an episode first then You can click one of the buttons to change the url</div>'
                             ], {
@@ -246,15 +253,14 @@
                 xhr.open("POST", '/dat' + 'a-parser/' + 'plugin' + 's/player/', true);
                 xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-                xhr.onreadystatechange = function() {
+                xhr.onreadystatechange = function () {
                     if (xhr.readyState == 4 && xhr.status == 200) {
                         var data = xhr.response;
                         set_meta_data(data);
                     }
                 }
-                xhr.onerror = function() {
-                    var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' +
-                        'm' + 'e');
+                xhr.onerror = function () {
+                    var ifr = document.getElementById("player-frame");
                     fetch("/error-configs/")
                         .then(response => response.blob()).then(ret => {
                             ifr.src = window.URL.createObjectURL(ret);
@@ -274,7 +280,7 @@
                     a.setAttribute("data-eid", p);
                     document.getElementById("ep_names").appendChild(a);
                     a.className = "episode-lists";
-                    a.onclick = function() {
+                    a.onclick = function () {
                         get_url_for(this.getAttribute('data-eid'), t_id);
                     }
                 }
@@ -292,8 +298,7 @@
             var blobbed_notif = window.URL.createObjectURL(__notif__);
 
             function get_url_for(eid, nonce) {
-                var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' +
-                    'm' + 'e');
+                var ifr = document.getElementById("player-frame");
                 ifr.src = blobbed_notif;
                 var req = new Request("/build-player/ep/", {
                     method: "POST",
@@ -331,8 +336,11 @@
                 var btndl1 = document.getElementById("dl-s1");
                 var btndl2 = document.getElementById("dl-s2");
                 var btndl3 = document.getElementById("dl-s3");
+                var linkdl1 = document.getElementById("link-s1");
+                var linkdl2 = document.getElementById("link-s2");
+                var linkdl3 = document.getElementById("link-s3");
 
-                function btndata(btn, btndl, url) {
+                function btndata(btn, btndl, url, linkdl) {
                     if (url.indexOf("://") > -1) {
                         url = url.replace("http://", "https://");
 
@@ -351,35 +359,31 @@
                     }
                     btndl.style.display = btn.style.display;
                     btndl.innerHTML = btn.innerHTML;
-                    btndl.setAttribute("data-dl", url);
+                    linkdl.href = "/out?url=" + encodeURIComponent(url);
                     btndl.innerHTML = btn.innerHTML;
-                    btn.onclick = function() {
-                        var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' +
-                            'm' + 'e');
+                    btn.onclick = function () {
+                        var ifr = document.getElementById("player-frame");
                         document.getElementById("ifr-bx").removeChild(ifr);
                         ifr.src = this.getAttribute("data");
                         document.getElementById("ifr-bx").appendChild(ifr);
                     }
-                    btndl.onclick = function() {
-                        window.location = '/out?url=' + encodeURIComponent(this.getAttribute("data-dl"));
-                    }
                 }
-                btndata(btns1, btndl1, url);
-                btndata(btns2, btndl2, alt1);
-                btndata(btns3, btndl3, alt2);
-                var ifr = document.getElementById('p' + 'l' + 'a' + 'y' + 'e' + 'r' + '-' + 'f' + 'r' + 'a' + 'm' + 'e');
+                btndata(btns1, btndl1, url, linkdl1);
+                btndata(btns2, btndl2, alt1, linkdl2);
+                btndata(btns3, btndl3, alt2, linkdl3);
+                var ifr = document.getElementById("player-frame");
                 ifr.src = url;
             }
-            document.getElementById("downloader-info").onclick = function() {
+            document.getElementById("downloader-info").onclick = function () {
                 document.getElementById("hdn-info").style.display = 'block';
                 document.getElementById("downloader-info").style.display = 'none';
             }
             start_player(keys);
 
-            document.getElementById("d-linker").onclick = function() {
+            document.getElementById("d-linker").onclick = function () {
                 window.location = encodeURI("/report?id=" + movie_id);
             };
-            document.getElementById("custom-dl").onclick = function() {
+            document.getElementById("custom-dl").onclick = function () {
                 document.getElementById("buttons-row").style.display = 'block';
             }
         </script>
