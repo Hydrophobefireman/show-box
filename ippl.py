@@ -192,6 +192,8 @@ def get_(url, v=True, n=1, season=0):
                         + "Stopping Execution,found a malacious website"
                     )
                     continue
+                if url_rec.startswith("//"):
+                    url_rec = "https:" + url_rec
                 data.append(url_rec.replace("http://", "https://"))
             else:
                 print(colors.BOLD + "[info]" + colors.ENDC + "Stopping Execution")

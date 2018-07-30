@@ -238,7 +238,6 @@ def gen_conf():
         content_type="application/json",
     )
 
-
 @app.route("/data/specs/", methods=["POST"])
 def get_all():
     json_data = {}
