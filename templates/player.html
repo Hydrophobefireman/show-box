@@ -19,142 +19,7 @@
     <meta name="robots" content="index,follow" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <title>Watch {{movie|safe}} on TV Series-get</title>
-    <style>
-        .episode-lists {
-            width: 100px;
-            outline: none;
-            padding: 7px 12px 5px 12px;
-            text-align: center;
-            border-radius: 15px;
-            background: #f0f0f0;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 12px;
-            color: #333;
-            font-weight: bold;
-            margin: 5px;
-            white-space: nowrap;
-            display: inline-block;
-            text-transform: uppercase
-        }
-
-        .episode-lists:active {
-            background: #333;
-            color: #fff;
-        }
-
-        .ipg0 {
-            -moz-border-radius: 5px;
-            -webkit-border-radius: 5px;
-            border-radius: 5px;
-            padding: 8px;
-            border: none;
-            outline: none;
-            background: #3367d6;
-            color: white;
-            text-transform: uppercase;
-            cursor: pointer;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            margin-top: 20px;
-        }
-
-        .input_n {
-            -moz-border-radius: 15px;
-            -webkit-border-radius: 15px;
-            border-radius: 15px;
-            width: 45%;
-            height: 30px;
-            padding: 8px;
-        }
-
-        .submit-button {
-            -moz-border-radius: 5px;
-            -webkit-border-radius: 5px;
-            border-radius: 5px;
-            padding: 8px;
-            border: none;
-            outline: none;
-            background: #3367d6;
-            color: white;
-            text-transform: uppercase;
-            cursor: pointer;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            margin-top: 20px;
-        }
-
-        .center_stuff {
-            margin-left: auto;
-            margin-right: auto;
-            text-align: center;
-        }
-
-        .ipg {
-            -moz-border-radius: 20px;
-            -webkit-border-radius: 20px;
-            border-radius: 20px;
-            margin-left: 5px;
-            margin-right: 5px;
-            padding: 8px;
-            border: none;
-            outline: none;
-            background: #3367d6;
-            color: white;
-            text-transform: uppercase;
-            cursor: pointer;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            margin-top: 20px;
-        }
-
-        .ipg_s {
-            -moz-border-radius: 20px;
-            -webkit-border-radius: 20px;
-            border-radius: 20px;
-            padding: 8px;
-            border: 2px solid #DFE1E5;
-            width: auto;
-            outline: none;
-            margin-top: 20px;
-            background: white;
-            text-transform: uppercase;
-            cursor: pointer;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            transition: 0.5s;
-        }
-
-        .links {
-            text-decoration: none;
-            color: #fff;
-        }
-
-        .links:hover {
-            border-bottom: 1px solid #e3e3e3;
-        }
-
-        body {
-            font-family: 'Open Sans', 'sans-serif';
-            margin: 0px;
-            padding: 0px;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/player.min.css" />
 </head>
 
 <body>
@@ -201,16 +66,6 @@
                     <div id=ifr-bx>
                         <iframe id=player-frame src="" style="width: 100%;height: 500px;"></iframe>
                     </div>
-                    <script>
-                        (function () {
-                            var bl_ob = new Blob([
-                                '<div style="text-align:center;">Loading Your Video.Select an episode first then You can click one of the buttons to change the url</div>'
-                            ], {
-                                "type": "text/html"
-                            });
-                            document.getElementById("player-frame").src = window.URL.createObjectURL(bl_ob);
-                        })();
-                    </script>
                     <div id=ep_names></div>
                     <div class="sources">
                         <button class="ipg" id="source1">source1</button>
@@ -224,6 +79,16 @@
             <button class=ipg_s id=d-linker style="width: 100%;">Report Dead Links</button>
         </div>
         {% compress 'js' %}
+        <script>
+            (function () {
+                var bl_ob = new Blob([
+                    '<div style="text-align:center;">Loading Your Video.Select an episode first then You can click one of the buttons to change the url</div>'
+                ], {
+                    "type": "text/html"
+                });
+                document.getElementById("player-frame").src = window.URL.createObjectURL(bl_ob);
+            })();
+        </script>
         <script>
             var nonce = "{{nonce|safe}}"
         </script>
