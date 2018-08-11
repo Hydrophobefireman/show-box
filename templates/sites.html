@@ -26,12 +26,14 @@
         </span>
         <div style="margin: 50px">
             Previously Used Site:
-            <span id=site_></span>
+            <span id=site_ style="display: inline"></span>
         </div>
     </div>
     <script>
         const site = (site) => {
-            document.getElementById('site_').innerHTML = site;
+            var _url = new URL(site);
+            var url = _url.hostname;
+            document.getElementById('site_').innerHTML = url;
         }
         site("{{site}}")
     </script>
