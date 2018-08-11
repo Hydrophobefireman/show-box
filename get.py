@@ -178,7 +178,7 @@ def ask_get():
 @app.route("/db-manage/parse-requests/", methods=["POST"])
 def get_s():
     movie = request.form.get("movie")
-    if not re.sub(r"\s", "", movie):
+    if not re.sub(r"[^\w]", "", movie):
         print("No movie Given")
         return "Please mention the movie"
     url = request.form.get("url")
