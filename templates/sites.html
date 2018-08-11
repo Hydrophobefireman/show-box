@@ -12,7 +12,9 @@
             display: block;
         }
     </style>
-
+    <script>
+        (() => document.title = decodeURIComponent('{{url}}'))();
+    </script>
 </head>
 
 <body>
