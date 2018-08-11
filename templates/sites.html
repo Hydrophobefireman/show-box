@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Download-{{url}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        span {
+            margin: 20px;
+            display: block;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div style="margin: auto;text-align: center">
+        <span>Select One Of the sites to download the video(both sites only allow 1 video at a time so its better to alternate)</span>
+        <span>
+            <a href="/set-downloader/?dl=https://dl-py.herokuapp.com/video?url={{url}}">DL-PY.HEROKUAPP.COM</a>
+        </span>
+        <span>
+            <a href="/set-downloader/?dl=https://proxy-py.herokuapp.com/api/parse_query?url={{url}}">PROXY-PY.HEROKUAPP.COM</a>
+        </span>
+        <div style="margin: 50px">
+            Previously Used Site:
+            <span id=site_></span>
+        </div>
+    </div>
+    <script>
+        const site = (site) => {
+            document.getElementById('site_').innerHTML = site;
+        }
+        site("{{site}}")
+    </script>
+</body>
+
+</html>
