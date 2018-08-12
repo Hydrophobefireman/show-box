@@ -34,7 +34,7 @@ app.config["COMPRESSOR_DEBUG"] = app.config.get("DEBUG")
 app.config["COMPRESSOR_OUTPUT_DIR"] = "./static/jsbin"
 app.config["COMPRESSOR_STATIC_PREFIX"] = "/static/jsbin/"
 jac = JAC(app)
-app.secret_key = "H(|hGh<;e"
+app.secret_key = ">%b3VAi&^{G"
 dburl = os.environ.get("DATABASE_URL")
 
 try:
