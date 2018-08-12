@@ -80,7 +80,7 @@
         </div>
         {% compress 'js' %}
         <script>
-            (function () {
+            (() => {
                 var bl_ob = new Blob([
                     '<div style="text-align:center;">Loading Your Video.Select an episode first then You can click one of the buttons to change the url</div>'
                 ], {
@@ -88,8 +88,6 @@
                 });
                 document.getElementById("player-frame").src = window.URL.createObjectURL(bl_ob);
             })();
-        </script>
-        <script>
             var nonce = "{{nonce|safe}}"
         </script>
         <script src="/static/jsmin/player.js"></script>

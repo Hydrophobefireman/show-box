@@ -1,16 +1,16 @@
-function parseqs(query) {
+const parseqs = query => {
     var params = {};
     query = ((query[0] == '?') ? query.substring(1) : query);
     query = decodeURI(query);
     var vars = query.split('&');
     for (var i = 0; i < vars.length; i++) {
         var pair = vars[i].split('=');
-        params[pair[0]] = pair[1];
+        params[pair[0]] = decodeURIComponent(pair[1]);
     }
     return params;
 }
 
-function extractHostname(url) {
+const extractHostname = (url) => {
     try {
         var a;
         if (url.indexOf("://") > -1) {
@@ -166,14 +166,14 @@ function build_player(data, key) {
     var ifr = document.getElementById("player-frame");
     ifr.src = url;
 }
-document.getElementById("downloader-info").onclick = function () {
+document.getElementById("downloader-info").onclick = () => {
     document.getElementById("hdn-info").style.display = 'block';
     document.getElementById("downloader-info").style.display = 'none';
 }
 
-document.getElementById("d-linker").onclick = function () {
-    window.location = encodeURI("/report?id=" + movie_id);
+document.getElementById("d-linker").onclick = () => {
+    window.location = encodeURI('/report?id=' + movie_id);
 };
-document.getElementById("custom-dl").onclick = function () {
+document.getElementById("custom-dl").onclick = () => {
     document.getElementById("buttons-row").style.display = 'block';
 }

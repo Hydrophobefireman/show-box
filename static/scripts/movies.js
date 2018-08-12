@@ -1,20 +1,23 @@
-var request = new Request("/dat" + "a/search/", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: params
-});
-fetch(request)
-    .then(response => response.text())
-    .then(response => {
-        gen_results(response);
-    }).catch(e => {
-        console.error(e)
-        nores_()
-    })
+(() => {
+    const request = new Request("/dat" + "a/search/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: params
+    });
+    fetch(request)
+        .then(response => response.text())
+        .then(response => {
+            gen_results(response);
+        }).catch(e => {
+            console.error(e)
+            nores_()
+        })
+})()
 
-function nores_() {
+
+const nores_ = () => {
     document.getElementById("main").style.display = 'none';
     document.getElementById("no-res").style.display = 'block';
 }
@@ -46,11 +49,11 @@ function gen_results(names) {
     }
 }
 
-function gen_img(img, imgURL) {
-    var compat_url = window["URL"] || window["webkitURL"];
-    var req = new Request(imgURL);
-    img.onload = function () {
-        compat_url.revokeObjectURL(this.src)
+const gen_img = (img, imgURL) => {
+    const compat_url = window["URL"] || window["webkitURL"];
+    const req = new Request(imgURL);
+    img.onload = e => {
+        compat_url.revokeObjectURL(e.target.src)
     }
     fetch(req)
         .then(response => response.blob())

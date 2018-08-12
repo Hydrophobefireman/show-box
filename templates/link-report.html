@@ -32,16 +32,16 @@
             user-select: none;
             margin-top: 20px;
         }
-        
+
         .links {
             text-decoration: none;
             color: #fff;
         }
-        
+
         .links:hover {
             border-bottom: 1px solid #e3e3e3;
         }
-        
+
         body {
             font-family: 'Open Sans', 'sans-serif';
             margin: 0px;
@@ -70,9 +70,9 @@
             </div> {% compress 'js' %}
             <script>
                 var repo = document.getElementById("report-box");
-                var compat_url = window["URL"] || window["webkitURL"];
-                var req = new Request("{{thumb|safe}}");
-                var img = document.createElement("img");
+                const compat_url = window["URL"] || window["webkitURL"];
+                const req = new Request("{{thumb|safe}}");
+                const img = document.createElement("img");
                 img.style.height = '200px';
                 img.style.width = '150px;'
                 fetch(req)
@@ -80,26 +80,26 @@
                     .then(blob => {
                         img.src = compat_url.createObjectURL(blob);
                     });
-                img.onload = function() {
+                img.onload = function () {
                     compat_url.revokeObjectURL(this.src)
                 }
                 repo.appendChild(img);
                 var repo = document.getElementById("report-box")
                 repo.appendChild(img);
-                var txtel = document.createElement("div");
+                const txtel = document.createElement("div");
                 txtel.innerHTML = "Report  movie {{title}}?"
                 repo.appendChild(txtel);
 
-                document.getElementById("sbmit-report").onclick = function() {
-                    var input_ = document.getElementById("episode-name");
-                    var reg = /^\d+$/;
+                document.getElementById("sbmit-report").onclick = () => {
+                    const input_ = document.getElementById("episode-name");
+                    const reg = /^\d+$/;
                     if (reg.test(input_.value)) {
-                        var report = new Request("/submit/report/", {
+                        const report = new Request("/submit/report/", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/x-www-form-urlencoded"
                             },
-                            body: "id=" + encodeURIComponent("{{m_id|safe}}")
+                            body: 'id=' + encodeURIComponent("{{m_id|safe}}")
                         });
                         fetch(report).then(response => response.text()).then(ret => {
                             document.getElementById("sub-success-error").innerHTML = ret;
