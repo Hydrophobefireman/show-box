@@ -76,6 +76,7 @@
     {% compress 'js' %}
     <script>
         var params = "q=" + encodeURIComponent(document.getElementById('jinja-data-query').getAttribute('content'));
+        console.log(params);
     </script>
     <script src='/static/jsmin/movies.js'></script>{% endcompress %}
 </body>

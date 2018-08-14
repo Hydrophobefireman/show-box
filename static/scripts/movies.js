@@ -25,7 +25,8 @@ const nores_ = () => {
 const gen_results = (names) => {
     var names = JSON.parse(names);
     if (names.hasOwnProperty("no-res")) {
-        nores_()
+        nores_();
+        return
     }
     var i = 0;
     document.getElementById("skelly").style.display = 'none';

@@ -65,7 +65,7 @@ class tvData(db.Model):
         self.mid = generate_id()
         self.season = season
         self.episodes = episodes
-        self.movie = re.sub(r"[^\w]", "", movie.lower())
+        self.movie = re.sub(r"([^\w]|_)", "", movie.lower())
         self.moviedisplay = movie
         self.thumb = thumb
 
@@ -165,7 +165,7 @@ def parse_report():
 
 @app.route("/search")
 def send_m():
-    if request.args.get("q") is None or not re.sub(r"[^\w]", "", request.args.get("q")):
+    if request.args.get("q") is None or not re.sub(r"([^\w]|_)", "", request.args.get("q")):
         return "Specify a term!"
     return html_minify(render_template("movies.html", q=request.args.get("q")))
 
@@ -178,7 +178,7 @@ def ask_get():
 @app.route("/db-manage/parse-requests/", methods=["POST"])
 def get_s():
     movie = request.form.get("movie")
-    if not re.sub(r"[^\w]", "", movie):
+    if not re.sub(r"([^\w]|_)", "", movie):
         print("No movie Given")
         return "Please mention the movie"
     url = request.form.get("url")
@@ -197,7 +197,8 @@ def google_():
 def serchs():
     json_data = {}
     json_data["movies"] = []
-    q = re.sub(r"[^\w]", "", request.form["q"]).lower()
+    q = re.sub(r"([^\w]|_)", "", request.form["q"]).lower()
+    print("Search For:", q)
     urls = tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q))).all()
     for url in urls:
         json_data["movies"].append(
