@@ -48,19 +48,24 @@ const gen_results = (names) => {
     }
 };
 const gen_img = (img, imgURL) => {
-    const compat_url = window["URL"] || window["webkitURL"];
-    const req = new Request(imgURL);
-    img.onload = self => {
-        compat_url.revokeObjectURL(self.target.src)
-    }
-    fetch(req)
-        .then(response => response.blob())
-        .then(blob => compat_url.createObjectURL(blob))
-        .then(res => {
-            img.src = res;
-            img.style.backgroundColor = '';
-        });
-};
+    return new Promise((resolve, reject) => {
+        const compat_url = window["URL"] || window["webkitURL"];
+        const req = new Request(imgURL);
+        img.onload = self => {
+            compat_url.revokeObjectURL(self.target.src)
+        };
+        fetch(req)
+            .then(response => response.blob())
+            .then(blob => compat_url.createObjectURL(blob))
+            .then(res => {
+                img.src = res;
+                img.style.backgroundColor = '';
+                resolve(img);
+            }).catch(reject());
+
+    })
+}
+
 const fetch_2 = (data) => {
     var _params = 'data=' + encodeURIComponent(data);
     var reqs = new Request('/fetch-token/links/post/', {
