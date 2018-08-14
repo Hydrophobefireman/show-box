@@ -10,6 +10,7 @@
     <meta name="description" content="Watch Unlimited movies For Free on Show-Box!" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <link href="/static/css/movies.min.css" rel="stylesheet">
+    <meta id='jinja-data-query' content={{q}}/>
 </head>
 
 <body>
@@ -74,7 +75,7 @@
     </div>
     {% compress 'js' %}
     <script>
-        var params = "q=" + encodeURIComponent("{{q}}");
+        var params = "q=" + encodeURIComponent(document.getElementById('jinja-data-query').getAttribute('content'));
     </script>
     <script src='/static/jsmin/movies.js'></script>{% endcompress %}
 </body>

@@ -1,6 +1,7 @@
 import json
 import random
-import re
+
+# import re
 from time import sleep
 from urllib.parse import urlencode
 from urllib.parse import urlparse as urlp_

@@ -7,7 +7,7 @@ import time
 import uuid
 from urllib.parse import quote
 
-import psycopg2
+# import psycopg2
 from flask import (
     Flask,
     Response,
@@ -290,29 +290,28 @@ def send_movie(mid, mdata):
     if mid is None:
         return "Nope"
     session["req_nonce"] = generate_id()
-    if os.path.isdir(".player-cache"):
-        if os.path.isfile(os.path.join(".player-cache", mid + ".json")):
-            with open(os.path.join(".player-cache", mid + ".json"), "r") as f:
-                try:
-                    data = json.loads(f.read())
-                    res = make_response(
-                        html_minify(
-                            render_template(
-                                "player.html",
-                                nonce=session["req_nonce"],
-                                movie=data["movie_name"],
-                                og_url=request.url,
-                                og_image=data["thumbnail"],
-                            )
+    if not os.path.isdir(".player-cache"):
+        os.mkdir(".player-cache")
+    if os.path.isfile(os.path.join(".player-cache", mid + ".json")):
+        with open(os.path.join(".player-cache", mid + ".json"), "r") as f:
+            try:
+                data = json.loads(f.read())
+                res = make_response(
+                    html_minify(
+                        render_template(
+                            "player.html",
+                            nonce=session["req_nonce"],
+                            movie=data["movie_name"],
+                            og_url=request.url,
+                            og_image=data["thumbnail"],
                         )
                     )
-                    res.headers["X-Sent-Cached"] = True
-                    print("Sending Cached Data")
-                    return res
-                except:
-                    pass
-    else:
-        os.mkdir(".player-cache")
+                )
+                res.headers["X-Sent-Cached"] = True
+                print("Sending Cached Data")
+                return res
+            except:
+                pass
     meta_ = tvData.query.filter_by(mid=mid).first()
     if meta_ is None:
         return "No movie associated with given id"

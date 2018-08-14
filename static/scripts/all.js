@@ -19,13 +19,13 @@ const start = (params) => {
 const nores_ = () => {
     document.getElementById("main").style.display = 'none';
     document.getElementById("no-res").style.display = 'block';
-}
+};
 
-function gen_results(names) {
+const gen_results = (names) => {
     var names = JSON.parse(names);
     if (names.hasOwnProperty("no-res")) {
         nores_()
-    }
+    };
     var i = 0;
     document.getElementById("skelly").style.display = 'none';
     for (; i < names["movies"]["length"]; i++) {
@@ -46,9 +46,7 @@ function gen_results(names) {
         dv.appendChild(sp);
         document.getElementById("content").appendChild(dv);
     }
-}
-
-
+};
 const gen_img = (img, imgURL) => {
     const compat_url = window["URL"] || window["webkitURL"];
     const req = new Request(imgURL);
@@ -64,33 +62,33 @@ const gen_img = (img, imgURL) => {
         });
 };
 const fetch_2 = (data) => {
-        var _params = 'data=' + encodeURIComponent(data);
-        var reqs = new Request('/fetch-token/links/post/', {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: _params,
-            credentials: 'include'
-        });
-        fetch(reqs).then(ret => ret.json()).then(retcode => {
-            data = retcode['id'];
-            setTimeout(start(data), 700);
-        })
-    }
-    ((data) => {
-        params = 'data=' + encodeURIComponent(data) + "&rns=" + btoa(Math.random().toString());
-        console.log(params)
-        var reqs = new Request('/fetch-token/configs/', {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            credentials: 'include',
-            body: params
-        });
-        fetch(reqs).then(ret => ret.json()).then(retcode => {
-            data = retcode['id'];
-            fetch_2(data);
-        })
-    })(__data)
+    var _params = 'data=' + encodeURIComponent(data);
+    var reqs = new Request('/fetch-token/links/post/', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: _params,
+        credentials: 'include'
+    });
+    fetch(reqs).then(ret => ret.json()).then(retcode => {
+        data = retcode['id'];
+        setTimeout(start(data), 700);
+    })
+};
+((data) => {
+    params = 'data=' + encodeURIComponent(data) + "&rns=" + btoa(Math.random().toString());
+    console.log(params)
+    var reqs = new Request('/fetch-token/configs/', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        credentials: 'include',
+        body: params
+    });
+    fetch(reqs).then(ret => ret.json()).then(retcode => {
+        data = retcode['id'];
+        fetch_2(data);
+    })
+})(__data)
