@@ -165,7 +165,9 @@ def parse_report():
 
 @app.route("/search")
 def send_m():
-    if request.args.get("q") is None or not re.sub(r"([^\w]|_)", "", request.args.get("q")):
+    if request.args.get("q") is None or not re.sub(
+        r"([^\w]|_)", "", request.args.get("q")
+    ):
         return "Specify a term!"
     return html_minify(render_template("movies.html", q=request.args.get("q")))
 
@@ -206,7 +208,7 @@ def serchs():
         )
     if len(json_data["movies"]) == 0:
         return json.dumps({"no-res": True})
-    return json.dumps(json_data)
+    return Response(json.dumps(json_data), content_type="application/json")
 
 
 @app.route("/error-configs/")
