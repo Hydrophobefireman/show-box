@@ -18,7 +18,6 @@ from flask import (
     send_from_directory,
     session,
 )
-from flask_compress import Compress
 from flask_sqlalchemy import SQLAlchemy
 from htmlmin.minify import html_minify
 from jac.contrib.flask import JAC
@@ -28,7 +27,6 @@ from flask_tools import flaskUtils
 
 app = Flask(__name__)
 app.config["FORCE_HTTPS_ON_PROD"] = True
-Compress(app)
 flaskUtils(app)
 app.config["COMPRESSOR_DEBUG"] = app.config.get("DEBUG")
 app.config["COMPRESSOR_OUTPUT_DIR"] = "./static/jsbin"
