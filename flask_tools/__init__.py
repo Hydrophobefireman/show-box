@@ -29,6 +29,7 @@ class flaskUtils(object):
         app.extensions["utils_ext"] = self
         self.app = app
 
+
         @app.before_request
         def enforce_https():
             request.process_time = time.time()
@@ -50,9 +51,8 @@ class flaskUtils(object):
         @app.after_request
         def after_req_headers(res):
             res.headers["X-Process-Time"] = time.time() - request.process_time
-            accept_encoding = request.headers.get("Accept-Encoding", "")
             res.headers["X-UID"] = str(uuid.uuid4())
-            return res
+            return res 
 
         @app.route("/favicon.ico")
         def send_fav():
@@ -61,9 +61,3 @@ class flaskUtils(object):
                 "favicon.ico",
                 mimetype="image/x-icon",
             )
-
-
-def brotli_content(response):
-    data = response.get_data()
-    deflated = brotli.compress(data)
-    return deflated
