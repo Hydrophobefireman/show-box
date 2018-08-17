@@ -1,6 +1,5 @@
 import os
 import uuid
-import brotli
 from flask import redirect, request, send_from_directory
 
 config = {
