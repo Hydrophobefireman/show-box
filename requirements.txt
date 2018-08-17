@@ -6,4 +6,3 @@ jac==0.17.1
 beautifulsoup4==4.6.0
 django-htmlmin==0.10.0
 gunicorn==19.8.1
-brotlipy==0.7.0
