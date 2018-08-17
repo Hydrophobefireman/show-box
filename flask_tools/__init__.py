@@ -30,48 +30,28 @@ class flaskUtils(object):
         self.app = app
 
         @app.before_request
-        def https():
+        def enforce_https():
             request.process_time = time.time()
             if (
-                app.config.get("FORCE_HTTPS_ON_PROD")
-                and request.endpoint in app.view_functions
+                request.endpoint in app.view_functions
                 and not request.is_secure
-                and "127.0.0.1" not in request.url
-                and "localhost" not in request.url
+                and not "127.0.0.1" in request.url
+                and not "localhost" in request.url
+                and not "192.168." in request.url
+                and request.url.startswith("http://")
             ):
-                return redirect(request.url.replace("http://", "https://"), code=307)
+                rd = request.url.replace("http://", "https://")
+                if "?" in rd:
+                    rd += "&rd=ssl"
+                else:
+                    rd += "?rd=ssl"
+                return redirect(rd, code=307)
 
         @app.after_request
         def after_req_headers(res):
             res.headers["X-Process-Time"] = time.time() - request.process_time
             accept_encoding = request.headers.get("Accept-Encoding", "")
             res.headers["X-UID"] = str(uuid.uuid4())
-            if (
-                res.mimetype not in config["COMPRESS_MIMETYPES"]
-                or "br" not in accept_encoding.lower()
-                or not 200 <= res.status_code < 300
-                or (
-                    res.content_length is not None
-                    and res.content_length < config["COMPRESS_MIN_SIZE"]
-                )
-                or "Content-Encoding" in res.headers
-            ):
-                return res
-            res.direct_passthrough = False
-            uncompressed_length = res.content_length
-            res.set_data(brotli_content(res))
-            res.headers["Content-Encoding"] = "br"
-            res.headers["Content-Length"] = res.content_length
-            res.headers["X-Compression-Percentage"] = int(
-                (res.content_length / uncompressed_length) * 100
-            )
-            vary = res.headers.get("Vary")
-            if vary:
-                if "accept-encoding" not in vary.lower():
-                    res.headers["Vary"] = "%s, Accept-Encoding" % (vary)
-            else:
-                res.headers["Vary"] = "Accept-Encoding"
-
             return res
 
         @app.route("/favicon.ico")
