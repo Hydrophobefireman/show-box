@@ -5,7 +5,7 @@ import random
 import re
 import time
 import uuid
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 # import psycopg2
 from flask import (
@@ -457,7 +457,7 @@ def redir():
 @app.route("/set-downloader/", strict_slashes=False)
 def set_dl():
     session["site-select"] = request.args.get("dl")
-    return redirect(session["site-select"], code=301)
+    return redirect(unquote(session["site-select"]), code=301)
 
 
 if __name__ == "__main__":

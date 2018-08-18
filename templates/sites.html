@@ -21,21 +21,33 @@
     <div style="margin: auto;text-align: center">
         <span>Select One Of the sites to download the video(both sites only allow 1 video at a time so its better to alternate)</span>
         <span>
-            <a href="/set-downloader/?dl=https://dl-js.herokuapp.com/video?url={{url}}">DL-JS.HEROKUAPP.COM</a>
+            <a href="#" id='dl-js'>DL-JS.HEROKUAPP.COM</a>
         </span>
         <span>
-            <a href="/set-downloader/?dl=https://proxy-py.herokuapp.com/api/parse_query?url={{url}}">PROXY-PY.HEROKUAPP.COM</a>
+            <a href="#" id='proxy-dl'>PROXY-PY.HEROKUAPP.COM</a>
         </span>
         <div style="margin: 50px">
             Previously Used Site:
-            <span id=site_ style="display: inline"></span>
+            <div id=site_></div>
         </div>
     </div>
     <script>
+        (() => {
+            document.getElementById('proxy-dl')
+                .href = "/set-downloader/?dl=" + encodeURIComponent(
+                    "https://proxy-py.herokuapp.com/api/parse_query?url=" + encodeURIComponent("{{url}}"));
+            document.getElementById('dl-js')
+                .href = '/set-downloader/?dl=' + encodeURIComponent("https://dl-js.herokuapp.com/video?url=" +
+                    encodeURIComuponent("{{url}}"));
+        })();
         const site = (site) => {
-            var _url = new URL(site);
-            var url = _url.hostname;
-            document.getElementById('site_').innerHTML = url;
+            try {
+                var _url = new URL(site);
+                var url = _url.hostname;
+                document.getElementById('site_').innerHTML = url;
+            } catch (e) {
+                document.getElementById('site_').innerHTML = 'None'
+            }
         }
         site("{{site}}")
     </script>

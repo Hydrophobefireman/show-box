@@ -11,6 +11,11 @@
     border-radius: 15px;
 }
 
+.links {
+    margin-left: 15px;
+    margin-right: 15px
+}
+
 .submit-button {
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;

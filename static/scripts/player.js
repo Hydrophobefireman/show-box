@@ -1,3 +1,23 @@
+const hash_episode = () => {
+    hash_ep = window.location.hash.substr(1);
+    if (hash_ep.length > 0) {
+        reqs = parseqs(hash_ep);
+        if (!isNaN(reqs.ep)) {
+            console.log(reqs)
+            get_url_for(reqs.ep, window.t_id);
+            return
+        }
+    }
+}
+window.addEventListener('hashchange', () => {
+    if (typeof window.t_id !== 'undefined') {
+        try {
+            hash_episode();
+        } catch (e) {
+            console.log(e);
+        }
+    }
+})
 const parseqs = query => {
     var params = {};
     query = ((query[0] == '?') ? query.substring(1) : query);
@@ -54,32 +74,32 @@ function start_player(key) {
 function set_meta_data(data) {
     data = JSON.parse(data);
     var episode_num = parseInt(data.episode_meta);
-    var t_id = data.tempid;
+    window.t_id = data.tempid;
     for (var i = 0; i < episode_num; i++) {
         p = i + 1;
-        var a = document.createElement("button");
+        var a = document.createElement("button"),
+            link = document.createElement('a');
         a.innerText = "Episode " + p;
         a.setAttribute("data-eid", p);
-        document.getElementById("ep_names").appendChild(a);
+        link.href = '#ep=' + p;
+        link.onclick = e => {
+            e.preventDefault()
+        }
+        document.getElementById("ep_names").appendChild(link);
+        link.appendChild(a);
         a.className = "episode-lists";
         a.onclick = function () {
-            get_url_for(this.getAttribute('data-eid'), t_id);
+            get_url_for(this.getAttribute('data-eid'), window.t_id);
+            window.location.hash = 'ep=' + this.getAttribute('data-eid');
         }
     }
     try {
-        hash_ep = window.location.hash.substr(1);
-        if (hash_ep.length > 0) {
-            reqs = parseqs(hash_ep);
-            if (!isNaN(reqs.ep)) {
-                console.log(reqs)
-                get_url_for(reqs.ep, t_id);
-                return
-            }
-        }
-        get_url_for("1", t_id)
+        hash_episode()
+        return
     } catch (e) {
-        console.log(e);
+        console.log(e)
     }
+    get_url_for(1, window.t_id)
 }
 
 var html_data =
@@ -170,10 +190,7 @@ document.getElementById("downloader-info").onclick = () => {
     document.getElementById("hdn-info").style.display = 'block';
     document.getElementById("downloader-info").style.display = 'none';
 }
-
-document.getElementById("d-linker").onclick = () => {
-    window.location = encodeURI('/report?id=' + movie_id);
-};
+document.getElementById('d-linker').href = encodeURI('/report?id=' + movie_id);
 document.getElementById("custom-dl").onclick = () => {
     document.getElementById("buttons-row").style.display = 'block';
 }

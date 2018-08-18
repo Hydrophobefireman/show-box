@@ -19,7 +19,7 @@
     <meta name="robots" content="index,follow" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <title>Watch {{movie|safe}} on TV Series-get</title>
-    <link rel="stylesheet" href="/static/css/player.min.css" />
+    <link rel="stylesheet" href="/static/css/player.css" />
 </head>
 
 <body>
@@ -43,7 +43,7 @@
                 <hr>
                 <div id="custom-dl-box" style='display: none'>
                     <button class="ipg0" id="custom-dl">Click Here to Use our custom Video Downloader</button>
-                    <button class="ipg" id="downloader-info">info</button>
+                    <button class="ipg" id="downloader-info" style="border-radius:5px;">info</button>
                     <div id="hdn-info" style="display: none">We Will download the video from the website or extract the mp4 url for you to watch the video without
                         any ads at all!</div>
                     <div id=buttons-row style="display: none;margin-bottom: 20px;">
@@ -76,10 +76,13 @@
             </div>
         </div>
         <div class=dead-links>
-            <button class=ipg_s id=d-linker style="width: 100%;">Report Dead Links</button>
+            <a href='#' id='d-linker'>
+                <button class=ipg_s style="width: 100%;">Report Dead Links</button>
+            </a>
         </div>
         {% compress 'js' %}
         <script>
+            var nonce = "{{nonce|safe}}";
             (() => {
                 var bl_ob = new Blob([
                     '<div style="text-align:center;">Loading Your Video.Select an episode first then You can click one of the buttons to change the url</div>'
@@ -88,7 +91,6 @@
                 });
                 document.getElementById("player-frame").src = window.URL.createObjectURL(bl_ob);
             })();
-            var nonce = "{{nonce|safe}}"
         </script>
         <script src="/static/scripts/player.js"></script>
         <script>
