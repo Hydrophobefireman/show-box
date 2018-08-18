@@ -61,7 +61,9 @@ const gen_img = (img, imgURL) => {
                 img.src = res;
                 img.style.backgroundColor = '';
                 resolve(img);
-            }).catch(reject());
+            }).catch(e => {
+                reject()
+            });
 
     })
 }
