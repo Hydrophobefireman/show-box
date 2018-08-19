@@ -6,6 +6,8 @@ const hash_episode = () => {
             console.log(reqs)
             get_url_for(reqs.ep, window.t_id);
             return
+        } else {
+            get_url_for(1, window.t_id)
         }
     }
 }
