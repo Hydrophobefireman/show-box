@@ -6,10 +6,9 @@ const hash_episode = () => {
             console.log(reqs)
             get_url_for(reqs.ep, window.t_id);
             return
-        } else {
-            get_url_for(1, window.t_id)
         }
     }
+    get_url_for(1, window.t_id)
 }
 window.addEventListener('hashchange', () => {
     if (typeof window.t_id !== 'undefined') {
@@ -165,7 +164,10 @@ function build_player(data, key) {
         btn.setAttribute("data", url);
         btn.innerHTML = extractHostname(url);
         if (extractHostname(url) == "null" || extractHostname(url).toLowerCase() == 'none') {
-            btn.style.display = 'none'
+            btn.remove();
+            btndl.remove();
+            linkdl.remove();
+            return
         } else {
             btn.style.display = 'inline';
             btn.setAttribute('data', url.toString().replace("http://", "https://"));
@@ -178,6 +180,7 @@ function build_player(data, key) {
         btn.onclick = function () {
             var ifr = document.getElementById("player-frame");
             document.getElementById("ifr-bx").removeChild(ifr);
+            console.log(this.getAttribute("data"));
             ifr.src = this.getAttribute("data");
             document.getElementById("ifr-bx").appendChild(ifr);
         }
