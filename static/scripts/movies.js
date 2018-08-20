@@ -14,7 +14,7 @@
             console.error(e)
             nores_()
         })
-})()
+})();
 
 
 const nores_ = () => {

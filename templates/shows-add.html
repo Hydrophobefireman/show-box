@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Add a TV Show</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .img-box {
+            display: inline-block;
+            text-align: center;
+            margin: 5px 10px;
+        }
+
+        .display-img {
+            height: 200px;
+            width: 150px;
+            cursor: pointer;
+            border-radius: 15px;
+        }
+
+        .text-box {
+            max-width: 150px;
+            display: grid;
+            text-align: center;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .links {
+            color: #000;
+        }
+
+        .media-name {
+            color: black;
+            margin: 10px
+        }
+
+        body {
+            background-color: #f5f5f5
+        }
+
+        .center {
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center
+        }
+
+        .show_input {
+            border: none;
+            border-bottom: 1px solid #6200ee;
+            border-radius: 3px;
+            outline: none;
+            margin-top: 10px;
+            width: 40%;
+            background-color: #f5f5f5;
+            padding: 8px;
+
+        }
+
+        #btn_s:hover,
+        #btn_s:active {
+            box-shadow: 2px 2px #d9dce0;
+            background-color: #6200ee;
+            color: #fff;
+        }
+
+        #btn_s {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 4px;
+            border: 1px solid #6200ee;
+            outline: none;
+            color: #6200ee;
+            text-transform: uppercase;
+            min-width: 80px;
+            height: 30px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        #load__ {
+            /*display: inline-block;*/
+            height: 60px;
+            user-select: none;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="center">
+        <div class="main">
+            <div>
+                <div>
+                    <span id='general-info' style="text-transform:capitalize;">search for a show</span>
+                </div>
+                <input type="text" class="show_input" id='show'>
+                <button id="btn_s">Add</button>
+                <div class=box>
+                    <img id=load__ src="/static/loading.gif">
+                    <div id="content"></div>
+                    <div id="relative" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        String.prototype.rot13 = function () {
+            return this.replace(/[a-zA-Z]/g, function (a) {
+                return String.fromCharCode(((a = a.charCodeAt()) < 91 ? 78 : 110) > a ? a + 13 : a - 13);
+            });
+        };
+        var input = document.getElementById('show'),
+            sumbit = document.getElementById('btn_s'),
+            loading_img = document.getElementById('load__'),
+            general_info = document.getElementById('general-info');
+        loading_img.addEventListener('contextmenu', function (e) {
+            e.preventDefault()
+        });
+        input.addEventListener('keydown', function (e) {
+            if (e.keyCode === 13) {
+                show_api();
+            }
+        });
+        sumbit.addEventListener('click', function () {
+            show_api();
+        });
+        var check = (params) => {
+            const request = new Request("/dat" + "a/search/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: params
+            });
+            fetch(request)
+                .then(response => response.text())
+                .then(response => {
+                    gen_results(response);
+                }).catch(e => {
+                    console.error(e);
+                })
+        };
+        var show_api = function () {
+            if (input.value.replace(/([^\w]|_)/g, '').length === 0) {
+                general_info.innerHTML = 'Invalid Characters!';
+            } else {
+                general_info.innerHTML = 'Searching';
+                loading_img.style.display = 'inline-block';
+                check("q=" + encodeURIComponent(input.value));
+                search_(input.value).then(res => {
+                    paint_page(res);
+                    loading_img.style.display = 'none';
+                    general_info.innerHTML = 'Search for a show';
+                }).catch(e => {
+                    console.log(e);
+                    general_info.innerHTML = 'An Error Occured';
+                })
+            }
+        };
+        var search_ = async (s) => {
+            try {
+                document.getElementById('content').innerHTML = '';
+                document.getElementById('relative').innerHTML = '';
+                var _search = encodeURIComponent(s);
+                var response = await fetch("/media/add-shows/fetch/?s=" + _search);
+                return await response.json();
+            } catch (e) {
+                console.error(e);
+                general_info.innerHTML = 'Failed to search for shows..try again later'
+            }
+        };
+        var paint_page = function (data) {
+            var shows = data.shows;
+            var content = document.getElementById('content'),
+                header = document.createElement('div');
+            header.innerHTML = 'Found {n} results..click on any of them to add them to our database'.replace(
+                "{n}", shows.length);
+            content.appendChild(header);
+            for (var i = 0; i < shows.length; i++) {
+                var div = document.createElement('div'),
+                    link = document.createElement('a'),
+                    show = shows[i];
+                link.innerHTML = show.title;
+                link.href = "/add/tv-show/lookup?s=" +
+                    encodeURIComponent(btoa(show.url).rot13().split('').reverse()
+                        .join('')) + "&t=" + encodeURIComponent(show.title);
+                link.className = 'links';
+                div.appendChild(link);
+                div.className = 'media-name';
+                content.appendChild(div);
+            }
+        };
+
+        function gen_results(names) {
+            var hder = document.createElement('div');
+            hder.innerHTML = 'These shows have already been added to our database:';
+            document.getElementById("relative").appendChild(hder);
+            var names = JSON.parse(names);
+            if (names.hasOwnProperty("no-res")) {
+                return
+            }
+            var i = 0;
+            document.getElementById("relative").style.display = 'block';
+            for (; i < names["movies"]["length"]; i++) {
+                var img = document.createElement("img");
+                img.style.backgroundColor = '#e3e3e3';
+                gen_img(img, names["movies"][i]["thumb"]);
+                var dv = document.createElement("div");
+                dv["className"] = "img-box";
+                var atag = document.createElement("a");
+                atag["href"] = encodeURI("/movie/" + names["movies"][i]["id"] + "/" + names["movies"][i][
+                    "movie"
+                ].replace(
+                    /[^\w]/g, "-") + "?id=" + btoa(Math.random()).slice(0, 8));
+                atag.appendChild(img);
+                dv.appendChild(atag);
+                img.className = 'display-img';
+                var sp = document.createElement("span");
+                sp["className"] = "text-box";
+                sp["innerHTML"] = names["movies"][i]["movie"];
+                dv.appendChild(sp);
+                document.getElementById("relative").appendChild(dv);
+            }
+        }
+        const gen_img = (img, imgURL) => {
+            const compat_url = window["URL"] || window["webkitURL"];
+            const req = new Request(imgURL);
+            img.onload = e => {
+                compat_url.revokeObjectURL(e.target.src)
+            }
+            fetch(req)
+                .then(response => response.blob())
+                .then(blob => compat_url.createObjectURL(blob))
+                .then(res => {
+                    img.src = res;
+                    img.style.backgroundColor = '';
+                });
+        };
+    </script>
+</body>
+
+</html>

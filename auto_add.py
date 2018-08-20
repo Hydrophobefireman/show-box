@@ -31,7 +31,8 @@ def main_(term=None, s_url=None):
             yn = input("Should I add:%s ?\n" % (u)).lower()
             if yn == "y":
                 print("[info]Adding:", u)
-                print(ippl.get_(u, True))
+                if tag.findChild(attrs={"class": "mli-eps"}):
+                    print(ippl.get_(u, True))
             else:
                 print("[info] Not adding the movie")
 
