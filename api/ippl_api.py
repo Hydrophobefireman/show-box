@@ -17,6 +17,13 @@ import dbmanage
 import upload
 
 
+def q(*args):
+    quit()
+
+
+input = q
+
+
 class colors:
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
