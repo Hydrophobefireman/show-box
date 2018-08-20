@@ -154,6 +154,9 @@ function build_player(data, key) {
     var linkdl3 = document.getElementById("link-s3");
 
     function btndata(btn, btndl, url, linkdl) {
+        if (btn === null) {
+            return
+        }
         if (url.indexOf("://") > -1) {
             url = url.replace("http://", "https://");
 
