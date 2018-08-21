@@ -184,13 +184,21 @@ def google_():
     return "google-site-verification: googlef06ee521abc7bdf8.html"
 
 
+def movie_list_sort(md):
+    return md.movie
+
+
 @app.route("/data/search/", methods=["POST"])
 def serchs():
     json_data = {}
     json_data["movies"] = []
     q = re.sub(r"([^\w]|_)", "", request.form["q"]).lower()
     print("Search For:", q)
-    urls = tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q))).all()
+    urls = (
+        tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q)))
+        .all()
+        .sort(key=movie_list_sort)
+    )
     for url in urls:
         json_data["movies"].append(
             {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
