@@ -194,11 +194,8 @@ def serchs():
     json_data["movies"] = []
     q = re.sub(r"([^\w]|_)", "", request.form["q"]).lower()
     print("Search For:", q)
-    urls = (
-        tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q)))
-        .all()
-        .sort(key=movie_list_sort)
-    )
+    urls = tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q))).all()
+    urls.sort(key=movie_list_sort)
     for url in urls:
         json_data["movies"].append(
             {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
