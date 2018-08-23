@@ -36,9 +36,8 @@
             document.getElementById('proxy-dl')
                 .href = "/set-downloader/?dl=" + encodeURIComponent(
                     "https://proxy-py.herokuapp.com/api/parse_query?url=" + encodeURIComponent("{{url}}"));
-            document.getElementById('dl-js')
-                .href = '/set-downloader/?dl=' + encodeURIComponent("https://dl-js.herokuapp.com/video?url=" +
-                    encodeURIComuponent("{{url}}"));
+            document.getElementById('dl-js').href = '/set-downloader/?dl=' + encodeURIComponent("https://dl-js.herokuapp.com/video?url=" +
+                    encodeURIComponent("{{url}}"));
         })();
         const site = (site) => {
             try {
