@@ -474,13 +474,12 @@ def redir():
     url = request.args.get("url")
     if url.startswith("//"):
         url = "https:" + url
-    return render_template("sites.html", url=quote(url), site=site), 300
-
+    return render_template("sites.html", url=url, site=site), 300
 
 @app.route("/set-downloader/", strict_slashes=False)
 def set_dl():
     session["site-select"] = request.args.get("dl")
-    return redirect(unquote(session["site-select"]), code=301)
+    return redirect(session["site-select"], code=301)
 
 
 if __name__ == "__main__":

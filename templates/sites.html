@@ -20,18 +20,35 @@
 <body>
     <div style="margin: auto;text-align: center">
         <span>Select One Of the sites to download the video(both sites only allow 1 video at a time so its better to alternate)</span>
-        <span>
-            <a href="#" id='dl-js'>DL-JS.HEROKUAPP.COM</a>
-        </span>
-        <span>
-            <a href="#" id='proxy-dl'>PROXY-PY.HEROKUAPP.COM</a>
-        </span>
+        <div id=content></div>
         <div style="margin: 50px">
             Previously Used Site:
             <div id=site_></div>
         </div>
     </div>
     <script>
+<<<<<<< HEAD
+        "use strict";
+        ! function () {
+            var e = {
+                    "PROXY-PY.HEROKUAPP.COM": {
+                        id: "proxy-dl",
+                        link: "https://proxy-py.herokuapp.com/api/parse_query?url="
+                    },
+                    "DL-JS.HEROKUAPP.COM": {
+                        id: "dl-js",
+                        link: "https://dl-js.herokuapp.com/video?url="
+                    },
+                    "PROXY-DL.HEROKUAPP.COM": {
+                        id: "proxy-dl",
+                        link: "https://proxy-dl.herokuapp.com/video?url="
+                    }
+                },
+                t = Object.keys(e),
+                n = !0,
+                r = !1,
+                o = void 0;
+=======
         (() => {
             document.getElementById('proxy-dl')
                 .href = "/set-downloader/?dl=" + encodeURIComponent(
@@ -40,15 +57,37 @@
                     encodeURIComponent("{{url}}"));
         })();
         const site = (site) => {
+>>>>>>> d10e00ab47e0d176f0e19b9c44a1bd7b56f50589
             try {
-                var _url = new URL(site);
-                var url = _url.hostname;
-                document.getElementById('site_').innerHTML = url;
+                for (var d, i = t[Symbol.iterator](); !(n = (d = i.next()).done); n = !0) {
+                    var l = d.value,
+                        a = document.createElement("div"),
+                        p = document.createElement("a");
+                    a.style.margin = '5px';
+                    a.id = e[l].id;
+                    var c = e[l].link + encodeURIComponent("{{url}}");
+                    p.href = "/set-downloader/?dl=" + encodeURIComponent(c), a.innerHTML = l, p.appendChild(a),
+                        document.getElementById("content").appendChild(p)
+                }
             } catch (e) {
-                document.getElementById('site_').innerHTML = 'None'
+                r = !0, o = e
+            } finally {
+                try {
+                    !n && i.return && i.return()
+                } finally {
+                    if (r) throw o
+                }
             }
-        }
-        site("{{site}}")
+        }();
+        var site = function (e) {
+            try {
+                var t = new URL(e).hostname;
+                document.getElementById("site_").innerHTML = t
+            } catch (e) {
+                document.getElementById("site_").innerHTML = "None"
+            }
+        };
+        site("{{site}}");
     </script>
 </body>
 
