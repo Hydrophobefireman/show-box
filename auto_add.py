@@ -5,7 +5,7 @@ from urllib.parse import quote_plus as quote
 import ippl
 
 
-def main_(term=None, s_url=None):
+def main_(term: str = None, s_url: str = None) -> None:
     if s_url is None:
         if term is None:
             return "No term Supplied"

@@ -24,7 +24,7 @@ class colors:
     UNDERLINE = "\033[4m"
 
 
-def get_(url, v=True, n=1, season=0):
+def get_(url: str, v: bool = True, n: int = 1, season: int = 0) -> None:
     ua = random.choice(
         [
             "Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US) AppleWebKit/604.1.38 (KHTML, like Gecko) Chrome/68.0.3325.162",
@@ -248,12 +248,12 @@ def get_(url, v=True, n=1, season=0):
     print("Done")
 
 
-def p_print(el):
+def p_print(el: list) -> None:
     for r in el:
         print("%d. %s" % (el.index(r) + 1, r))
 
 
-def dict_print(el, v=True):
+def dict_print(el: dict, v: bool = True) -> None:
     if v:
         print("{")
         for r in el:
@@ -261,7 +261,7 @@ def dict_print(el, v=True):
         print("}")
 
 
-def to_screen(data, v):
+def to_screen(data: list, v: bool) -> None:
     assert isinstance(data, list)
     if v:
         print(*data)

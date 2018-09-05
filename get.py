@@ -10,8 +10,8 @@ import uuid
 from urllib.parse import quote, unquote
 
 # import psycopg2
-from flask import (
-    Flask,
+from quart import (
+    Quart,
     Response,
     make_response,
     redirect,
@@ -26,18 +26,14 @@ from jac.contrib.flask import JAC
 
 from api import ippl_api
 from dbmanage import req_db
+
 from flask_tools import flaskUtils
 
-app = Flask(__name__)
+app = Quart(__name__)
 app.config["FORCE_HTTPS_ON_PROD"] = True
-flaskUtils(app)
-app.config["COMPRESSOR_DEBUG"] = app.config.get("DEBUG")
-app.config["COMPRESSOR_OUTPUT_DIR"] = "./static/jsbin"
-app.config["COMPRESSOR_STATIC_PREFIX"] = "/static/jsbin/"
-jac = JAC(app)
 app.secret_key = ">%b3VAi&^{G"
 dburl = os.environ.get("DATABASE_URL")
-
+flaskUtils(app=app)
 try:
     if dburl is None:
         with open(".dbinfo_", "r") as f:
@@ -74,12 +70,12 @@ class tvData(db.Model):
         return "<Name %r>" % self.movie
 
 
-def generate_id():
+def generate_id() -> str:
     lst_ = secrets.token_urlsafe()
     return lst_[: gen_rn()]
 
 
-def gen_rn():
+def gen_rn() -> int:
     return random.randint(10, 17)
 
 
@@ -110,23 +106,23 @@ class deadLinks(db.Model):
 
 
 @app.route("/robots.txt")
-def check__():
-    return send_from_directory(
-        os.path.join(app.root_path, "static"), "robots.txt", mimetype="text/plain"
+async def check__():
+    return await send_from_directory(
+        os.path.join(app.root_path, "static"), "robots.txt"
     )
 
 
 @app.route("/")
-def index():
+async def index():
     if session.get("req-data"):
         d = "Thanks for helping us out!"
     else:
         d = " "
-    return html_minify(render_template("index.html", msg=d))
+    return html_minify(await render_template("index.html", msg=d))
 
 
 @app.route("/report/")
-def report_dead():
+async def report_dead():
     m_id = request.args.get("id")
     if m_id is None:
         return "No movie id specified"
@@ -135,13 +131,16 @@ def report_dead():
         return "No movie associated with given id"
     thumb = meta_.thumb
     title = meta_.moviedisplay
-    return render_template("link-report.html", m_id=m_id, title=title, thumb=thumb)
+    return await render_template(
+        "link-report.html", m_id=m_id, title=title, thumb=thumb
+    )
 
 
 @app.route("/submit/report/", methods=["POST"])
-def parse_report():
+async def parse_report():
     try:
-        mid = request.form["id"]
+        form = await request.form
+        mid = form["id"]
         col = deadLinks(mid)
         db.session.add(col)
         db.session.commit()
@@ -153,46 +152,50 @@ def parse_report():
 
 
 @app.route("/search")
-def send_m():
+async def send_m():
     if request.args.get("q") is None or not re.sub(
         r"([^\w]|_)", "", request.args.get("q")
     ):
         return "Specify a term!"
-    return html_minify(render_template("movies.html", q=request.args.get("q")))
+    q = request.args.get("q")
+
+    return html_minify(await render_template("movies.html", q=q))
 
 
 @app.route("/help-us/")
-def ask_get():
-    return html_minify(render_template("help.html"))
+async def ask_get():
+    return html_minify(await render_template("help.html"))
 
 
 @app.route("/db-manage/parse-requests/", methods=["POST"])
-def get_s():
-    movie = request.form.get("movie")
+async def get_s():
+    _movie = await request.form
+    movie = _movie.get("movie")
     if not re.sub(r"([^\w]|_)", "", movie):
         print("No movie Given")
         return "Please mention the movie"
-    url = request.form.get("url")
+    url = _movie.get("url")
     data = (movie, url)
     a = req_db(data)
     print(a)
-    return redirect("/", 301)
+    return redirect("/", status_code=301)
 
 
 @app.route("/googlef06ee521abc7bdf8.html")
-def google_():
+async def google_():
     return "google-site-verification: googlef06ee521abc7bdf8.html"
 
 
-def movie_list_sort(md):
+def movie_list_sort(md: tvData) -> str:
     return md.movie
 
 
 @app.route("/data/search/", methods=["POST"])
-def serchs():
+async def serchs():
     json_data = {}
+    form = await request.form
     json_data["movies"] = []
-    q = re.sub(r"([^\w]|_)", "", request.form["q"]).lower()
+    q = re.sub(r"([^\w]|_)", "", form["q"]).lower()
     print("Search For:", q)
     urls = tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q))).all()
     urls.sort(key=movie_list_sort)
@@ -206,27 +209,21 @@ def serchs():
 
 
 @app.route("/error-configs/")
-def err_configs():
-    return render_template("err.html")
+async def err_configs():
+    return await render_template("err.html")
 
 
-@app.route("/favicon.ico")
-def favicon():
-    return send_from_directory(
-        os.path.join(app.root_path, "static"), "favicon.ico", mimetype="image/x-icon"
-    )
-
-
-@app.route("/all/", strict_slashes=False)
-def all_movies():
+@app.route("/all/")
+async def all_movies():
     session["req-all"] = (generate_id() + generate_id())[:20]
-    return html_minify(render_template("all.html", data=session["req-all"]))
+    return html_minify(await render_template("all.html", data=session["req-all"]))
 
 
 @app.route("/fetch-token/configs/", methods=["POST"])
-def gen_conf():
-    data = request.form["data"]
-    rns = request.form["rns"]
+async def gen_conf():
+    _data = await request.form
+    data = _data["data"]
+    rns = _data["rns"]
     if data != session["req-all"]:
         return "lol"
     session["req-all"] = (generate_id() + rns + generate_id())[:20]
@@ -237,9 +234,10 @@ def gen_conf():
 
 
 @app.route("/data/specs/", methods=["POST"])
-def get_all():
+async def get_all():
     json_data = {}
-    forms = request.form["q"]
+    _forms = await request.form
+    forms = _forms["q"]
     json_data["movies"] = []
     if session["req-all"] != forms:
         return "!cool"
@@ -250,8 +248,8 @@ def get_all():
                 tst = cached_data.get("stamp")
                 if time.time() - float(tst) < 600:
                     print("Sending Cached Data")
-                    res = make_response(json.dumps(cached_data.get("data")))
-                    res.headers["X-Sent-Cached"] = True
+                    res = await make_response(json.dumps(cached_data.get("data")))
+                    res.headers["X-Sent-Cached"] = str(True)
                     return res
             except json.decoder.JSONDecodeError:  # File manually emptied
                 pass
@@ -266,14 +264,15 @@ def get_all():
     meta_ = {"stamp": time.time(), "data": json_data}
     with open(".db-cache--all", "w") as fs:
         fs.write(json.dumps(meta_))
-    res = make_response(json.dumps(json_data))
-    res.headers["X-Sent-Cached"] = False
+    res = await make_response(json.dumps(json_data))
+    res.headers["X-Sent-Cached"] = str(False)
     return res
 
 
 @app.route("/fetch-token/links/post/", methods=["POST"])
-def s_confs():
-    data = request.form["data"]
+async def s_confs():
+    _data = await request.form
+    data = _data["data"]
     if data != session["req-all"]:
         return "No"
     session["req-all"] = (generate_id() + generate_id())[:20]
@@ -283,7 +282,7 @@ def s_confs():
 
 
 @app.route("/movie/<mid>/<mdata>/")
-def send_movie(mid, mdata):
+async def send_movie(mid, mdata):
     if mid is None:
         return "Nope"
     session["req_nonce"] = generate_id()
@@ -293,9 +292,9 @@ def send_movie(mid, mdata):
         with open(os.path.join(".player-cache", mid + ".json"), "r") as f:
             try:
                 data = json.loads(f.read())
-                res = make_response(
+                res = await make_response(
                     html_minify(
-                        render_template(
+                        await render_template(
                             "player.html",
                             nonce=session["req_nonce"],
                             movie=data["movie_name"],
@@ -304,7 +303,7 @@ def send_movie(mid, mdata):
                         )
                     )
                 )
-                res.headers["X-Sent-Cached"] = True
+                res.headers["X-Sent-Cached"] = str(True)
                 print("Sending Cached Data")
                 return res
             except:
@@ -323,9 +322,9 @@ def send_movie(mid, mdata):
             "season": meta_.season,
         }
         f.write(json.dumps(data_js))
-    res = make_response(
+    res = await make_response(
         html_minify(
-            render_template(
+            await render_template(
                 "player.html",
                 nonce=session["req_nonce"],
                 movie=movie_name,
@@ -334,14 +333,15 @@ def send_movie(mid, mdata):
             )
         )
     )
-    res.headers["X-Sent-Cached"] = False
+    res.headers["X-Sent-Cached"] = str(False)
     return res
 
 
 @app.route("/data-parser/plugins/player/", methods=["POST"])
-def plugin():
-    mid = request.form["id"]
-    if request.form["nonce"] != session["req_nonce"]:
+async def plugin():
+    _mid = await request.form
+    mid = _mid["id"]
+    if _mid["nonce"] != session["req_nonce"]:
         return "Lol"
     nonce = generate_id()
     session["req_nonce"] = nonce
@@ -356,9 +356,9 @@ def plugin():
                         "tempid": nonce,
                         "utf-8": "✓",
                     }
-                    res = make_response(json.dumps(json_data))
+                    res = await make_response(json.dumps(json_data))
                     res.headers["Content-Type"] = "application/json"
-                    res.headers["X-Sent-Cached"] = True
+                    res.headers["X-Sent-Cached"] = str(True)
                     print("Sending Cached Data")
                     return res
                 except:
@@ -376,18 +376,19 @@ def plugin():
     json_data = json.dumps({**common_, "tempid": nonce, "utf-8": "✓"})
     with open(os.path.join(".player-cache", mid + ".json"), "w") as f:
         f.write(json.dumps(meta_data))
-    res = make_response(json_data)
-    res.headers["X-Sent-Cached"] = False
+    res = await make_response(json_data)
+    res.headers["X-Sent-Cached"] = str(False)
     res.headers["Content-Type"] = "application/json"
     return res
 
 
 @app.route("/build-player/ep/", methods=["POST"])
-def send_ep_data():
-    eid = request.form["eid"]
-    if request.form["nonce"] != session["req_nonce"]:
+async def send_ep_data():
+    eeid = await request.form
+    eid = eeid["eid"]
+    if eeid["nonce"] != session["req_nonce"]:
         return "LuL"
-    episode = request.form["mid"]
+    episode = eeid["mid"]
     if os.path.isdir(".player-cache") and os.path.isfile(
         os.path.join(".player-cache", episode + ".json")
     ):
@@ -409,30 +410,30 @@ def send_ep_data():
         "alt1": str(urls[1]).replace("http:", "https:"),
         "alt2": str(urls[2]).replace("http:", "https:"),
     }
-    res = make_response(json.dumps(json_data))
+    res = await make_response(json.dumps(json_data))
     res.headers["Content-Type"] = "application/json"
-    res.headers["X-Sent-Cached"] = header
+    res.headers["X-Sent-Cached"] = str(header)
     return res
 
 
 @app.route("/no-result/")
-def b404():
-    return html_minify(render_template("no-result.html"))
+async def b404():
+    return html_minify(await render_template("no-result.html"))
 
 
 @app.route("/media/add/")
-def add_show():
-    return render_template("shows-add.html")
+async def add_show():
+    return await render_template("shows-add.html")
 
 
-@app.route("/media/add-shows/fetch/", strict_slashes=False)
-def search_shows():
+@app.route("/media/add-shows/fetch/")
+async def search_shows():
     show = request.args.get("s")
     return Response(ippl_api.main_(term=show), content_type="application/json")
 
 
-@app.route("/add/tv-show/lookup/", strict_slashes=False)
-def add_show_lookup():
+@app.route("/add/tv-show/lookup/")
+async def add_show_lookup():
     _show_url = request.args.get("s")
     title = request.args.get("t", "")
     q = re.sub(r"([^\w]|_)", "", title).lower()
@@ -444,14 +445,15 @@ def add_show_lookup():
         )
     thread = threading.Thread(target=ippl_api.get_, args=(_show_url, title))
     thread.start()
-    return render_template("shows_add_evt.html", show_url=_show_url, show=title)
+    return await render_template("shows_add_evt.html", show_url=_show_url, show=title)
 
 
 @app.route("/sec/add/", methods=["POST"])
-def add_():
+async def add_():
     try:
-        data = request.form["lists"]
-        if request.form["pw"] != os.environ.get("_pass_"):
+        _data = await request.form
+        data = _data["lists"]
+        if _data["pw"] != os.environ.get("_pass_"):
             return "No"
         data = json.loads(data)
         title = data["title"]
@@ -468,19 +470,21 @@ def add_():
         return "Malformed Input" + str(e)
 
 
-@app.route("/out/", strict_slashes=False)
-def redir():
+@app.route("/out")
+async def redir():
     site = session.get("site-select")
     url = request.args.get("url")
     if url.startswith("//"):
         url = "https:" + url
-    return render_template("sites.html", url=url, site=site), 300
+    return await render_template("sites.html", url=url, site=site), 300
 
-@app.route("/set-downloader/", strict_slashes=False)
-def set_dl():
+
+@app.route("/set-downloader/")
+async def set_dl():
     session["site-select"] = request.args.get("dl")
-    return redirect(session["site-select"], code=301)
+    return redirect(session["site-select"], status_code=301)
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=True)
+

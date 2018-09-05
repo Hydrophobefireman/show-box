@@ -7,7 +7,7 @@ import base64
 from bs4 import BeautifulSoup as bs
 
 
-def check_for_stream_sites(url, ua):
+def check_for_stream_sites(url: str, ua: str) -> list:
     s_sites = [
         "coolseries.video",
         "watchseries.",

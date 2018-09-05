@@ -1,6 +1,8 @@
 import os
 import uuid
-from flask import redirect, request, send_from_directory
+from quart import redirect, request, send_from_directory
+import gzip
+from io import BytesIO
 
 config = {
     "COMPRESS_MIMETYPES": [
@@ -28,9 +30,8 @@ class flaskUtils(object):
         app.extensions["utils_ext"] = self
         self.app = app
 
-
         @app.before_request
-        def enforce_https():
+        async def enforce_https():
             request.process_time = time.time()
             if (
                 request.endpoint in app.view_functions
@@ -41,22 +42,82 @@ class flaskUtils(object):
                 and request.url.startswith("http://")
             ):
                 rd = request.url.replace("http://", "https://")
-                if "?" in rd:
+                if "?" in rd and "&rd=" not in rd:
                     rd += "&rd=ssl"
                 else:
                     rd += "?rd=ssl"
-                return redirect(rd, code=307)
+                return redirect(rd, status_code=307)
 
         @app.after_request
-        def after_req_headers(res):
-            res.headers["X-Process-Time"] = time.time() - request.process_time
-            res.headers["X-UID"] = str(uuid.uuid4())
-            return res 
+        async def cors___(res):
+            defaults = [
+                (
+                    "COMPRESS_MIMETYPES",
+                    [
+                        "text/html",
+                        "text/css",
+                        "text/xml",
+                        "application/json",
+                        "application/javascript",
+                    ],
+                ),
+                ("COMPRESS_LEVEL", 8),
+                ("COMPRESS_MIN_SIZE", 500),
+            ]
+
+            for k, v in defaults:
+                app.config.setdefault(k, v)
+            res.direct_passthrough = False
+            accept_encoding = request.headers.get("Accept-Encoding", "")
+            res.headers["Access-Control-Allow-Origin"] = "https://pycode.tk"
+            res.headers["Access-Control-Allow-Headers"] = "*"
+            res.headers["X-Process-Time"] = str(time.time() - request.process_time)
+            vary = res.headers.get("Vary")
+            if vary:
+                if "access-control-allow-origin" not in vary.lower():
+                    res.headers[
+                        "Vary"
+                    ] = "{}, Access-Control-Allow-Origin,Access-Control-Allow-Headers".format(
+                        vary
+                    )
+            else:
+                res.headers[
+                    "Vary"
+                ] = "Access-Control-Allow-Origin,Access-Control-Allow-Headers"
+            if (
+                res.mimetype not in app.config["COMPRESS_MIMETYPES"]
+                or "gzip" not in accept_encoding.lower()
+                or not 200 <= res.status_code < 300
+                or (
+                    res.content_length is not None
+                    and res.content_length < app.config["COMPRESS_MIN_SIZE"]
+                )
+                or "Content-Encoding" in res.headers
+            ):
+                return res
+            gzip_content = await compress(app, res)
+            res.set_data(gzip_content)
+            res.headers["content-encoding"] = "gzip"
+            res.headers["content-length"] = str(res.content_length)
+            if vary:
+                if "accept-encoding" not in vary.lower():
+                    res.headers["vary"] = "{}, Accept-Encoding".format(vary)
+            else:
+                res.headers["vary"] = "Accept-Encoding"
+            return res
+
+        async def compress(app, response):
+            gzip_buffer = BytesIO()
+            with gzip.GzipFile(
+                mode="wb",
+                compresslevel=app.config["COMPRESS_LEVEL"],
+                fileobj=gzip_buffer,
+            ) as gzip_file:
+                gzip_file.write(await response.get_data())
+            return gzip_buffer.getvalue()
 
         @app.route("/favicon.ico")
-        def send_fav():
-            return send_from_directory(
-                os.path.join(app.root_path, "static"),
-                "favicon.ico",
-                mimetype="image/x-icon",
+        async def send_fav():
+            return await send_from_directory(
+                os.path.join(app.root_path, "static"), "favicon.ico"
             )

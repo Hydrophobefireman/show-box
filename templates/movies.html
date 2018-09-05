@@ -18,8 +18,7 @@
         <a class=links href='/'>
             <span class='h-link'>Home Page</span>
         </a>
-        <a class=links id='all' href=/all>
-            <span class='h-link'>All movies</span>
+        <a class=links id='all' href=/all> <span class='h-link'>All movies</span>
         </a>
     </div>
     <div id="main">
@@ -73,11 +72,10 @@
             </div>
         </div>
     </div>
-    {% compress 'js' %}
     <script>
         var params = "q=" + encodeURIComponent(document.getElementById('jinja-data-query').getAttribute('content'));
     </script>
-    <script src='/static/jsmin/movies.js'></script>{% endcompress %}
+    <script src='/static/jsmin/movies.js'></script>
 </body>
 
 </html>

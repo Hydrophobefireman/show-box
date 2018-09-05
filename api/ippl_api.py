@@ -18,7 +18,7 @@ import upload
 
 
 def q(*args):
-    quit()
+    return quit()
 
 
 input = q
@@ -35,7 +35,7 @@ class colors:
     UNDERLINE = ""
 
 
-def main_(term=None, s_url=None):
+def main_(term: str = None, s_url: str = None):
     ret_data = {}
     ret_data["shows"] = []
     if s_url is None:

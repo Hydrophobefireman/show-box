@@ -2,7 +2,7 @@ import cloudinary.uploader
 import os
 
 
-def upload(imgurl):
+def upload(imgurl: str) -> dict:
     clapi_key = os.environ.get("key")
     clapi_secret = os.environ.get("cl_secret")
     if clapi_key is None:
