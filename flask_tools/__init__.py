@@ -32,21 +32,17 @@ class flaskUtils(object):
 
         @app.before_request
         async def enforce_https():
-            request.process_time = time.time()
             if (
                 request.endpoint in app.view_functions
                 and not request.is_secure
-                and not "127.0.0.1" in request.url
-                and not "localhost" in request.url
-                and not "192.168." in request.url
-                and request.url.startswith("http://")
+                and not request.headers.get("X-Forwarded-Proto", "http") == "https"
+                and "127.0.0.1" not in request.url
+                and "localhost" not in request.url
+                and "herokuapp." in request.url
             ):
-                rd = request.url.replace("http://", "https://")
-                if "?" in rd and "&rd=" not in rd:
-                    rd += "&rd=ssl"
-                else:
-                    rd += "?rd=ssl"
-                return redirect(rd, status_code=307)
+                return redirect(
+                    request.url.replace("http://", "https://"), status_code=301
+                )
 
         @app.after_request
         async def cors___(res):
