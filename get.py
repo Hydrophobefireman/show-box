@@ -22,8 +22,6 @@ from quart import (
 )
 from flask_sqlalchemy import SQLAlchemy
 from htmlmin.minify import html_minify
-from jac.contrib.flask import JAC
-
 from api import ippl_api
 from dbmanage import req_db
 
