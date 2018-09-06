@@ -36,8 +36,6 @@ var inp_res = document.getElementById('inp-results');
             div.style.width = '80%';
             div.appendChild(span);
             div.style.margin = 'auto';
-            img.style.height = '80px';
-            img.style.margin = '10px';
             span.innerHTML = js.movie;
             inp_res.appendChild(div);
             div.style.textAlign = 'left';
