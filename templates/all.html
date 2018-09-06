@@ -23,8 +23,9 @@
             <div class="box-h-fa">
                 <div id=searchbox>
                     <form action="/search">
-                        <input class=input_n style="outline: none" type="text" name="q">
+                        <input class=input_n style="outline: none" type="text" name="q" id='dynamic_inp'>
                         <input type="submit" id=fr-ui7-2-g11g class=submit-button style="width:10%;" value='Go'>
+                        <div id='inp-results'></div>
                     </form>
                 </div>
                 <div id="content">
@@ -54,6 +55,7 @@
         var __data = "{{data|safe}}";
     </script>
     <script src="/static/jsmin/all.js"></script>
+    <script src='/static/jsmin/socket.js'></script>
 </body>
 
 </html>

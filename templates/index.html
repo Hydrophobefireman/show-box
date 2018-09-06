@@ -17,8 +17,7 @@
 
 <body>
     <div style="position:fixed;width:100%;top:0;margin-left:auto;margin-right:auto;padding: 8px;overflow: hidden;background: #333;text-align: center">
-        <a class=links id='all' href=/all>
-            <span class='h-link'>All TV Series</span>
+        <a class=links id='all' href=/all> <span class='h-link'>All TV Series</span>
         </a>
     </div>
     <div class=center_stuff style="margin-top: 35px;">
@@ -32,12 +31,14 @@
                 </div>
                 <span>Search for TV Series</span>
                 <form action="/search">
-                    <input class=input_n style="outline: none" type="text" name="q">
+                    <input class=input_n style="outline: none" type="text" name="q" id='dynamic_inp'>
                     <input type="submit" id=fr-ui7-2-g11g class=submit-button style="width:10%;display: none" value='Go'>
                     <button class=submit-button onclick="document.forms[0].submit()">Search</button>
+                    <div id='inp-results'></div>
                 </form>
                 <div class=help>
-                    <span>Hi there! we are a new website that hopes to provide you with the TV Series you need..you can help us
+                    <span>Hi there! we are a new website that hopes to provide you with the TV Series you need..you can
+                        help us
                         by
                         <a href='/help-us/'>requesting a TV Show or by providing a link to the movie!</a>
                     </span>
@@ -45,6 +46,7 @@
             </div>
         </div>
     </div>
+    <script src='/static/jsmin/socket.js'></script>
 </body>
 
 </html>

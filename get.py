@@ -15,6 +15,7 @@ from quart import (
     Response,
     make_response,
     redirect,
+    websocket,
     render_template,
     request,
     send_from_directory,
@@ -428,6 +429,43 @@ async def add_show():
 async def search_shows():
     show = request.args.get("s")
     return Response(ippl_api.main_(term=show), content_type="application/json")
+
+
+@app.websocket("/suggestqueries")
+async def socket_conn():
+    while 1:
+        query = await websocket.receive()
+        file = ".db-cache--all"
+        data = None
+        json_data = {"data": []}
+        no_data = True
+        if os.path.isfile(file):
+            no_data = False
+            with open(file, "r") as f:
+                _data = f.read()
+            try:
+                data = json.loads(_data)
+                names = data["data"]["movies"]
+                json_data["data"] = [
+                    s
+                    for s in names
+                    if re.search(r".*?%s" % (query), s["movie"], re.IGNORECASE)
+                ]
+                await websocket.send(json.dumps({**json_data, "Cached": True}))
+            except:
+                no_data = True
+        if no_data:
+            urls = movieData.query.all()
+            for url in urls:
+                json_data["data"].append(
+                    {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
+                )
+            if len(json_data["data"]) == 0:
+                return json.dumps({"no-res": True})
+            meta_ = {"stamp": time.time(), "data": json_data}
+            with open(file, "w") as fs:
+                fs.write(json.dumps(meta_))
+            await websocket.send(json.dumps({**json_data, "Cached": False}))
 
 
 @app.route("/add/tv-show/lookup")
