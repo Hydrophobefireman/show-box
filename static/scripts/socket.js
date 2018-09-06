@@ -27,9 +27,6 @@ var inp_res = document.getElementById('inp-results');
             var js = data[i];
             var div = document.createElement("div");
             var span = document.createElement('span');
-            var img = document.createElement('img');
-            img.id = js.id;
-            div.setAttribute('data-id', js.thumb);
             div.setAttribute('data-im', js.id)
             div.onclick = function () {
                 window.location = '/movie/' + this.getAttribute('data-im') + "/movie"
@@ -37,13 +34,6 @@ var inp_res = document.getElementById('inp-results');
             div.style.cursor = 'pointer';
             div.style.listStyle = 'none';
             div.style.width = '80%';
-            div.onmouseenter = function () {
-                __img(document.getElementById(this.getAttribute('data-im')), this.getAttribute('data-id'))
-            };
-            document.ontouchstart = function () {
-                __img(document.getElementById(this.getAttribute('data-im')), this.getAttribute('data-id'))
-            }
-            div.appendChild(img);
             div.appendChild(span);
             div.style.margin = 'auto';
             img.style.height = '80px';
@@ -69,22 +59,3 @@ function make_req(e, ws) {
 function check_inp(str) {
     return str.replace(/([^\w]|_)/g, '').length !== 0;
 }
-
-function __img(img, imgURL) {
-    if (img.src) {
-        return
-    }
-    var compat_url = window["URL"] || window["webkitURL"];
-    var req = new Request(imgURL);
-    img.onload = function (self) {
-        compat_url.revokeObjectURL(self.target.src);
-    };
-    fetch(req).then(function (response) {
-        return response.blob();
-    }).then(function (blob) {
-        return compat_url.createObjectURL(blob);
-    }).then(function (res) {
-        img.src = res;
-        img.style.backgroundColor = '';
-    });
-};
