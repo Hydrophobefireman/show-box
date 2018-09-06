@@ -430,7 +430,7 @@ async def search_shows():
     return Response(ippl_api.main_(term=show), content_type="application/json")
 
 
-@app.route("/add/tv-show/lookup/")
+@app.route("/add/tv-show/lookup")
 async def add_show_lookup():
     _show_url = request.args.get("s")
     title = request.args.get("t", "")
