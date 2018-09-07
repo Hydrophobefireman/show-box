@@ -436,6 +436,7 @@ async def socket_conn():
     while 1:
         query = await websocket.receive()
         file = ".db-cache--all"
+        names = []
         data = None
         json_data = {"data": []}
         no_data = True
@@ -446,26 +447,31 @@ async def socket_conn():
             try:
                 data = json.loads(_data)
                 names = data["data"]["movies"]
-                json_data["data"] = [
-                    s
-                    for s in names
-                    if re.search(r".*?%s" % (query), s["movie"], re.IGNORECASE)
-                ]
-                await websocket.send(json.dumps({**json_data, "Cached": True}))
+                cached = False
             except:
                 no_data = True
         if no_data:
+            cached = True
             urls = tvData.query.all()
             for url in urls:
-                json_data["data"].append(
+                names.append(
                     {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
                 )
-            if len(json_data["data"]) == 0:
-                return json.dumps({"no-res": True})
-            meta_ = {"stamp": time.time(), "data": json_data}
+        json_data["data"] = [
+            s for s in names if re.search(r".*?%s" % (query), s["movie"], re.IGNORECASE)
+        ]
+        if len(json_data["data"]) == 0:
+            await websocket.send(json.dumps({"no-res": True}))
+        else:
+            meta_ = {"stamp": time.time(), "data": {"movies": names}}
             with open(file, "w") as fs:
                 fs.write(json.dumps(meta_))
-            await websocket.send(json.dumps({**json_data, "Cached": False}))
+            json_data["data"].sort(key=sort_dict)
+            await websocket.send(json.dumps({**json_data, "Cached": cached}))
+
+
+def sort_dict(el, key="movie"):
+    return el.get(key)
 
 
 @app.route("/add/tv-show/lookup")

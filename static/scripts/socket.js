@@ -21,7 +21,15 @@ var inp_res = document.getElementById('inp-results');
     ws.onmessage = function (_msg_) {
         _msg = _msg_.data;
         inp_res.style.display = 'block';
-        var msg = JSON.parse(_msg);
+        try {
+            var msg = JSON.parse(_msg);
+            if (msg['no-res']) {
+                return
+            }
+        } catch (e) {
+            console.log(e);
+            return
+        }
         var data = msg.data;
         console.log("Response Cached:" + msg.Cached);
         for (var i = 0; i < data.length; i++) {
