@@ -20,6 +20,7 @@ var inp_res = document.getElementById('inp-results');
     }
     ws.onmessage = function (_msg_) {
         _msg = _msg_.data;
+        inp_res.style.display = 'block';
         var msg = JSON.parse(_msg);
         var data = msg.data;
         console.log("Response Cached:" + msg.Cached);
@@ -29,11 +30,13 @@ var inp_res = document.getElementById('inp-results');
             var span = document.createElement('span');
             div.setAttribute('data-im', js.id)
             div.onclick = function () {
-                window.location = '/movie/' + this.getAttribute('data-im') + "/movie"
+                window.location = '/movie/' + this.getAttribute('data-im') + "/watch/"
             };
             div.style.cursor = 'pointer';
             div.style.listStyle = 'none';
-            div.style.width = '80%';
+            div.style.width = '45%';
+            div.style.fontSize = 'small';
+            div.className = 'sock-res';
             div.appendChild(span);
             div.style.margin = 'auto';
             span.innerHTML = js.movie;
@@ -43,8 +46,15 @@ var inp_res = document.getElementById('inp-results');
             div.style.borderRadius = '5px';
 
         }
+
     };
 })();
+
+window.onclick = function (e) {
+    if (e.target.className !== 'input_n' && e.target.className !== 'sock-res' && e.target != inp_res) {
+        inp_res.innerHTML = ''
+    }
+}
 
 function make_req(e, ws) {
     var str = e.value;

@@ -455,7 +455,7 @@ async def socket_conn():
             except:
                 no_data = True
         if no_data:
-            urls = movieData.query.all()
+            urls = tvData.query.all()
             for url in urls:
                 json_data["data"].append(
                     {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
