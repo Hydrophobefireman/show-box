@@ -19,6 +19,7 @@ var inp_res = document.getElementById('inp-results');
         console.log(e)
     }
     ws.onmessage = function (_msg_) {
+        inp_res.innerHTML = "";
         _msg = _msg_.data;
         inp_res.style.display = 'block';
         try {
