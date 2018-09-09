@@ -70,10 +70,7 @@ function make_req(e, ws) {
     if (!check_inp(str)) {
         return;
     };
-    if (!ws.readyState === 3) {
-        ws.send(str);
-    }
-
+    ws.send(str);
 }
 
 function check_inp(str) {
