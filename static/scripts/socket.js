@@ -1,23 +1,24 @@
 String.prototype.trunc = function (n) {
-    return (this.length > n) ? this.substr(0, n - 1) + '...' : this;
+    return this.length > n ? this.substr(0, n - 1) + '...' : this;
 };
 var dynamic_inp = document.getElementById("dynamic_inp");
 var inp_res = document.getElementById('inp-results');
 
-(() => {
+(function () {
 
     if (!window.WebSocket) {
         return;
     }
-    var websocket_url = (window.location.protocol === 'https:' ? "wss://" : "ws://") + window.location.host + "/suggestqueries";
+    var websocket_url = (window.location.protocol === 'https:' ? "wss://" : "ws://") +
+        window.location.host + "/suggestqueries";
     var ws = new WebSocket(websocket_url);
     dynamic_inp.oninput = function () {
         inp_res.innerHTML = "";
-        make_req(this, ws)
+        make_req(this, ws);
     };
     ws.onopen = function (e) {
-        console.log(e)
-    }
+        console.log(e);
+    };
     ws.onmessage = function (_msg_) {
         inp_res.innerHTML = "";
         _msg = _msg_.data;
@@ -25,11 +26,11 @@ var inp_res = document.getElementById('inp-results');
         try {
             var msg = JSON.parse(_msg);
             if (msg['no-res']) {
-                return
+                return;
             }
         } catch (e) {
             console.log(e);
-            return
+            return;
         }
         var data = msg.data;
         console.log("Response Cached:" + msg.Cached);
@@ -37,11 +38,12 @@ var inp_res = document.getElementById('inp-results');
             var js = data[i];
             var div = document.createElement("div");
             var span = document.createElement('span');
-            div.setAttribute('data-im', js.id)
+            div.setAttribute('data-im', js.id);
             div.onclick = function () {
-                window.location = '/movie/' + this.getAttribute('data-im') + "/watch/"
+                window.location = '/movie/' + this.getAttribute('data-im') + "/watch/";
             };
             div.style.cursor = 'pointer';
+            div.style.userSelect = 'none';
             div.style.listStyle = 'none';
             div.style.width = '45%';
             div.style.fontSize = 'small';
@@ -53,24 +55,25 @@ var inp_res = document.getElementById('inp-results');
             div.style.textAlign = 'left';
             div.style.border = '2px solid #e3e3e3';
             div.style.borderRadius = '5px';
-
         }
-
     };
 })();
 
 window.onclick = function (e) {
     if (e.target.className !== 'input_n' && e.target.className !== 'sock-res' && e.target != inp_res) {
-        inp_res.innerHTML = ''
+        inp_res.innerHTML = '';
     }
-}
+};
 
 function make_req(e, ws) {
     var str = e.value;
     if (!check_inp(str)) {
         return;
+    };
+    if (!ws.readyState === 3) {
+        ws.send(str);
     }
-    ws.send(str);
+
 }
 
 function check_inp(str) {

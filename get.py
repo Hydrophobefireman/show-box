@@ -433,8 +433,26 @@ async def search_shows():
 
 @app.websocket("/suggestqueries")
 async def socket_conn():
+    start_time = time.time()
     while 1:
         query = await websocket.receive()
+        if (time.time() - start_time) >= 300:
+            print("E")
+            await websocket.send(
+                json.dumps(
+                    {
+                        "data": [
+                            {
+                                "timeout": True,
+                                "movie": "Please Refresh Your Browser..connection timed out",
+                                "id": "_",
+                                "thumbnail": "no",
+                            }
+                        ]
+                    }
+                )
+            )
+            return
         file = ".db-cache--all"
         names = []
         data = None
