@@ -465,11 +465,11 @@ async def socket_conn():
             try:
                 data = json.loads(_data)
                 names = data["data"]["movies"]
-                cached = False
+                cached = True
             except:
                 no_data = True
         if no_data:
-            cached = True
+            cached = False
             urls = tvData.query.all()
             for url in urls:
                 names.append(
