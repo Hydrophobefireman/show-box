@@ -9,7 +9,13 @@ const hash_episode = () => {
         }
     }
     get_url_for(1, window.t_id)
-}
+};
+
+function urlencode(json, with_q) {
+    return ((with_q) ? '?' : '') + Object.keys(json).map(function (key) {
+        return encodeURIComponent(key) + '=' + encodeURIComponent(json[key]);
+    }).join('&');
+};
 window.addEventListener('hashchange', () => {
     if (typeof window.t_id !== 'undefined') {
         try {
@@ -51,7 +57,11 @@ var keys = "set-id"
 
 function start_player(key) {
     console.log(key);
-    var params = eval('encodeURI("id=" + movie_id + "&nonce=" + nonce)');
+    //var params = eval('encodeURI("id=" + movie_id + "&nonce=" + nonce)');
+    var params = urlencode({
+        id: movie_id,
+        "nonce": nonce
+    }, false)
     var xhr = new XMLHttpRequest();
     xhr.open("POST", '/dat' + 'a-parser/' + 'plugin' + 's/player/', true);
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -75,6 +85,7 @@ function start_player(key) {
 function set_meta_data(data) {
     data = JSON.parse(data);
     var episode_num = parseInt(data.episode_meta);
+    window.movie_title = data.movie_name
     window.t_id = data.tempid;
     for (var i = 0; i < episode_num; i++) {
         p = i + 1;
@@ -115,8 +126,11 @@ function get_url_for(eid, nonce) {
     ifr.src = blobbed_notif;
     var req = new Request("/build-player/ep/", {
         method: "POST",
-        body: "eid=" + encodeURIComponent(eid) + "&nonce=" + encodeURIComponent(nonce) + "&mid=" +
-            encodeURIComponent(movie_id),
+        body = urlencode({
+            "eid": eid,
+            "nonce": nonce,
+            mid: movie_id
+        }, false),
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
         },
@@ -124,7 +138,7 @@ function get_url_for(eid, nonce) {
     });
     fetch(req)
         .then(res => res.text()).then(ret => {
-            build_player(ret, "dummy-key-authorised")
+            build_player(ret, "dummy-key-authorised", eid)
             document.getElementById("curr-ep-id").innerHTML = "Now Playing-Episode " + eid;
             document.getElementById("download-episode-name").innerHTML = eid;
         }).catch(e => {
@@ -137,7 +151,7 @@ function get_url_for(eid, nonce) {
 }
 
 
-function build_player(data, key) {
+function build_player(data, key, eid) {
     document.getElementById("custom-dl-box").style.display = 'block';
     data = JSON.parse(data);
     var url = data['url'];
@@ -153,7 +167,7 @@ function build_player(data, key) {
     var linkdl2 = document.getElementById("link-s2");
     var linkdl3 = document.getElementById("link-s3");
 
-    function btndata(btn, btndl, url, linkdl) {
+    function btndata(btn, btndl, url, linkdl, eid) {
         if (btn === null) {
             return
         }
@@ -177,8 +191,11 @@ function build_player(data, key) {
             /* chrome will outright block any iframe in http */
         }
         btndl.style.display = btn.style.display;
-        btndl.innerHTML = btn.innerHTML;
-        linkdl.href = "/out?url=" + encodeURIComponent(url);
+        btndl.innerHTML = btn.innerHTML; //?url=" + encodeURIComponent(url);
+        linkdl.href = "/out" + urlencode({
+            'url': url,
+            "title": window.movie_title + " episode:" + eid
+        }, true)
         btndl.innerHTML = btn.innerHTML;
         btn.onclick = function () {
             var ifr = document.getElementById("player-frame");
@@ -188,9 +205,9 @@ function build_player(data, key) {
             document.getElementById("ifr-bx").appendChild(ifr);
         }
     }
-    btndata(btns1, btndl1, url, linkdl1);
-    btndata(btns2, btndl2, alt1, linkdl2);
-    btndata(btns3, btndl3, alt2, linkdl3);
+    btndata(btns1, btndl1, url, linkdl1, eid);
+    btndata(btns2, btndl2, alt1, linkdl2, eid);
+    btndata(btns3, btndl3, alt2, linkdl3, eid);
     var ifr = document.getElementById("player-frame");
     ifr.src = url;
 }

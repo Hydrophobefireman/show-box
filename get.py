@@ -354,6 +354,7 @@ async def plugin():
                         "episode_meta": data["episode_meta"],
                         "tempid": nonce,
                         "utf-8": "✓",
+                        "movie_name": data["movie_name"],
                     }
                     res = await make_response(json.dumps(json_data))
                     res.headers["Content-Type"] = "application/json"
@@ -365,13 +366,12 @@ async def plugin():
     else:
         os.mkdir(".player-cache")
     data = tvData.query.filter_by(mid=mid).first()
-    common_ = {"season": data.season, "episode_meta": len(data.episodes)}
-    meta_data = {
-        **common_,
-        "episodes": data.episodes,
+    common_ = {
+        "season": data.season,
+        "episode_meta": len(data.episodes),
         "movie_name": data.moviedisplay,
-        "thumbnail": data.thumbnail,
     }
+    meta_data = {**common_, "episodes": data.episodes, "thumbnail": data.thumbnail}
     json_data = json.dumps({**common_, "tempid": nonce, "utf-8": "✓"})
     with open(os.path.join(".player-cache", mid + ".json"), "w") as f:
         f.write(json.dumps(meta_data))
@@ -534,9 +534,10 @@ async def add_():
 async def redir():
     site = session.get("site-select")
     url = request.args.get("url")
+    title = request.args.get("title", "TV Show")
     if url.startswith("//"):
         url = "https:" + url
-    return await render_template("sites.html", url=url, site=site), 300
+    return await render_template("sites.html", url=url, site=site, title=title), 300
 
 
 @app.route("/set-downloader/")
