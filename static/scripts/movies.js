@@ -28,21 +28,21 @@ const gen_results = (names) => {
         nores_();
         return
     }
-    var i = 0;
+    let i = 0;
     document.getElementById("skelly").style.display = 'none';
     for (; i < names["movies"]["length"]; i++) {
-        var img = document.createElement("img");
+        const img = document.createElement("img");
         img.style.backgroundColor = '#e3e3e3';
         gen_img(img, names["movies"][i]["thumb"]);
-        var dv = document.createElement("div");
+        const dv = document.createElement("div");
         dv["className"] = "img-box";
-        var atag = document.createElement("a");
-        atag["href"] = encodeURI("/movie/" + names["movies"][i]["id"] + "/" + names["movies"][i]["movie"].replace(
-            /[^\w]/g, "-"));
+        const atag = document.createElement("a");
+        atag["href"] = encodeURI(`/movie/${names["movies"][i]["id"]}/${names["movies"][i]["movie"].replace(
+    /[^\w]/g, "-")}`);
         atag.appendChild(img);
         dv.appendChild(atag);
         img.className = 'display-img';
-        var sp = document.createElement("span");
+        const sp = document.createElement("span");
         sp["className"] = "text-box";
         sp["innerHTML"] = names["movies"][i]["movie"];
         dv.appendChild(sp);
@@ -53,8 +53,8 @@ const gen_results = (names) => {
 const gen_img = (img, imgURL) => {
     const compat_url = window["URL"] || window["webkitURL"];
     const req = new Request(imgURL);
-    img.onload = e => {
-        compat_url.revokeObjectURL(e.target.src)
+    img.onload = ({target}) => {
+        compat_url.revokeObjectURL(target.src)
     }
     fetch(req)
         .then(response => response.blob())

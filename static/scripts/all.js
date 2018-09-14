@@ -1,10 +1,10 @@
 const start = (params) => {
-    var request = new Request("/dat" + "a/specs/", {
+    const request = new Request("/dat" + "a/specs/", {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: "q=" + params,
+        body: `q=${params}`,
         credentials: 'include'
     });
     fetch(request)
@@ -26,21 +26,21 @@ const gen_results = (names) => {
     if (names.hasOwnProperty("no-res")) {
         nores_()
     };
-    var i = 0;
+    let i = 0;
     document.getElementById("skelly").style.display = 'none';
     for (; i < names["movies"]["length"]; i++) {
-        var img = document.createElement("img");
+        const img = document.createElement("img");
         img.style.backgroundColor = '#e3e3e3';
         gen_img(img, names["movies"][i]["thumb"]);
-        var dv = document.createElement("div");
+        const dv = document.createElement("div");
         dv["className"] = "img-box";
-        var atag = document.createElement("a");
-        atag["href"] = encodeURI("/movie/" + names["movies"][i]["id"] + "/" + names["movies"][i]["movie"].replace(
-            /(\(|\)|\s)/g, "-") + "?id=" + btoa(Math.random()).slice(0, 8));
+        const atag = document.createElement("a");
+        atag["href"] = encodeURI(`/movie/${names["movies"][i]["id"]}/${names["movies"][i]["movie"].replace(
+    /(\(|\)|\s)/g, "-")}?id=${btoa(Math.random()).slice(0, 8)}`);
         atag.appendChild(img);
         dv.appendChild(atag);
         img.className = 'display-img';
-        var sp = document.createElement("span");
+        const sp = document.createElement("span");
         sp["className"] = "text-box";
         sp["innerHTML"] = names["movies"][i]["movie"];
         dv.appendChild(sp);
@@ -51,8 +51,8 @@ const gen_img = (img, imgURL) => {
     return new Promise((resolve, reject) => {
         const compat_url = window["URL"] || window["webkitURL"];
         const req = new Request(imgURL);
-        img.onload = self => {
-            compat_url.revokeObjectURL(self.target.src)
+        img.onload = ({target}) => {
+            compat_url.revokeObjectURL(target.src)
         };
         fetch(req)
             .then(response => response.blob())
@@ -65,12 +65,12 @@ const gen_img = (img, imgURL) => {
                 reject()
             });
 
-    })
+    });
 }
 
 const fetch_2 = (data) => {
-    var _params = 'data=' + encodeURIComponent(data);
-    var reqs = new Request('/fetch-token/links/post/', {
+    const _params = `data=${encodeURIComponent(data)}`;
+    const reqs = new Request('/fetch-token/links/post/', {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
@@ -84,9 +84,9 @@ const fetch_2 = (data) => {
     })
 };
 ((data) => {
-    params = 'data=' + encodeURIComponent(data) + "&rns=" + btoa(Math.random().toString());
+    params = `data=${encodeURIComponent(data)}&rns=${btoa(Math.random().toString())}`;
     console.log(params)
-    var reqs = new Request('/fetch-token/configs/', {
+    const reqs = new Request('/fetch-token/configs/', {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"

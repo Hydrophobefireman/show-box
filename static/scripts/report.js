@@ -28,7 +28,7 @@ document.getElementById("sbmit-report").onclick = () => {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: 'id=' + encodeURIComponent("{{m_id|safe}}")
+            body: `id=${encodeURIComponent("{{m_id|safe}}")}`
         });
         fetch(report).then(response => response.text()).then(ret => {
             document.getElementById("sub-success-error").innerHTML = ret;
