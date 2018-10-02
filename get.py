@@ -33,20 +33,69 @@ app.config["FORCE_HTTPS_ON_PROD"] = True
 app.secret_key = ">%b3VAi&^{G"
 dburl = os.environ.get("DATABASE_URL")
 flaskUtils(app=app)
+
+
+def open_and_write(fn: str, mode: str = "w", data=None) -> None:
+    with open(fn, mode) as f:
+        f.write(data)
+    return
+
+
+def open_and_read(fn: str, mode: str = "r", strip: bool = True):
+    with open(fn, mode) as f:
+        if strip:
+            data = f.read().strip()
+        else:
+            data = f.read()
+    return data
+
+
 try:
-    if dburl is None:
-        with open(".dbinfo_", "r") as f:
-            dburl = f.read().strip()
-except FileNotFoundError:
+    dburl = os.environ.get("DATABASE_URL") or open_and_read(".dbinfo_")
+except:
     raise Exception(
-        "No DB url specified try add it to the environment or create a \
-        .dbinfo_ file with the url"
+        "No DB url specified try add it to the environment or \
+        create a .dbinfo_ file with the url"
     )
 app.config["SQLALCHEMY_DATABASE_URI"] = dburl
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
                     (KHTML, like Gecko) Chrome/66.0.3343.3 Safari/537.36"
+
+
+def get_all_results(request_if_not_heroku=True, number=0, shuffle=True):
+    db_cache_file = os.path.join(app.root_path, ".db-cache--all")
+    jsdata = __data__ = []
+    data = None
+    if os.path.isfile(db_cache_file):
+        _data = open_and_read(db_cache_file)
+        try:
+            data = json.loads(_data).get("data").get("movies")
+            __data__ = data
+        except Exception as e:
+            print(e)
+    elif request_if_not_heroku:
+        _data = tvData.query.all()
+        for url in _data:
+            jsdata.append(
+                {
+                    "movie": url.moviedisplay,
+                    "id": url.mid,
+                    "thumb": url.thumb,
+                    "moviename": url.movie,
+                }
+            )
+        _meta = json.dumps({"stamp": time.time(), "data": {"movies": jsdata}})
+        open_and_write(db_cache_file, _meta)
+        __data__ = jsdata
+    else:
+        return []
+    if number:
+        return random.choices(__data__, k=number)
+    if shuffle:
+        random.shuffle(__data__)
+        return __data__
 
 
 class tvData(db.Model):
@@ -240,29 +289,8 @@ async def get_all():
     json_data["movies"] = []
     if session["req-all"] != forms:
         return "!cool"
-    if os.path.isfile(".db-cache--all"):
-        with open(".db-cache--all", "r") as f:
-            try:
-                cached_data = json.loads(f.read())
-                tst = cached_data.get("stamp")
-                if time.time() - float(tst) < 600:
-                    print("Sending Cached Data")
-                    res = await make_response(json.dumps(cached_data.get("data")))
-                    res.headers["X-Sent-Cached"] = str(True)
-                    return res
-            except json.decoder.JSONDecodeError:  # File manually emptied
-                pass
-    urls = tvData.query.all()
-    random.shuffle(urls)
-    for url in urls:
-        json_data["movies"].append(
-            {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
-        )
-    if len(json_data["movies"]) == 0:
-        return json.dumps({"no-res": True})
-    meta_ = {"stamp": time.time(), "data": json_data}
-    with open(".db-cache--all", "w") as fs:
-        fs.write(json.dumps(meta_))
+    movs = get_all_results(shuffle=True)
+    json_data["movies"] = movs
     res = await make_response(json.dumps(json_data))
     res.headers["X-Sent-Cached"] = str(False)
     return res
@@ -453,39 +481,16 @@ async def socket_conn():
                 )
             )
             return
-        file = ".db-cache--all"
-        names = []
-        data = None
         json_data = {"data": []}
-        no_data = True
-        if os.path.isfile(file):
-            no_data = False
-            with open(file, "r") as f:
-                _data = f.read()
-            try:
-                data = json.loads(_data)
-                names = data["data"]["movies"]
-                cached = True
-            except:
-                no_data = True
-        if no_data:
-            cached = False
-            urls = tvData.query.all()
-            for url in urls:
-                names.append(
-                    {"movie": url.moviedisplay, "id": url.mid, "thumb": url.thumb}
-                )
+        names = get_all_results()
         json_data["data"] = [
             s for s in names if re.search(r".*?%s" % (query), s["movie"], re.IGNORECASE)
         ]
         if len(json_data["data"]) == 0:
             await websocket.send(json.dumps({"no-res": True}))
         else:
-            meta_ = {"stamp": time.time(), "data": {"movies": names}}
-            with open(file, "w") as fs:
-                fs.write(json.dumps(meta_))
             json_data["data"].sort(key=sort_dict)
-            await websocket.send(json.dumps({**json_data, "Cached": cached}))
+            await websocket.send(json.dumps({**json_data, "cached": "undefined"}))
 
 
 def sort_dict(el, key="movie"):

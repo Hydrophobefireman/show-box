@@ -83,13 +83,13 @@
         </div>
         <script>
             var nonce = "{{nonce|safe}}";
-            (() => {
-                var bl_ob = new Blob([
-                    '<div style="text-align:center;">Loading Your Video.Select an episode first then You can click one of the buttons to change the url</div>'
+            (function () {
+                var a = new Blob([
+                    "<div style=\"text-align:center;\">Loading Your Video You can click one of the buttons to change the url</div>"
                 ], {
-                    "type": "text/html"
+                    type: "text/html"
                 });
-                document.getElementById("player-frame").src = window.URL.createObjectURL(bl_ob);
+                document.getElementById("player-frame").src = window.URL.createObjectURL(a)
             })();
         </script>
         <script src="/static/jsmin/player.js"></script>
