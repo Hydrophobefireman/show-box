@@ -50,7 +50,7 @@ def open_and_write(fn: str, mode: str = "w", data=None) -> None:
 
 
 app.secret_key = os.environ.get("db_pass_insig") or open_and_read(
-    ".dbpass-insignificant"
+    ".dbpass-insignificant_1"
 )
 
 

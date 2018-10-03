@@ -16,6 +16,7 @@ eggs/
 .eggs/
 lib/
 .dbpass-insignificant
+.dbpass-insignificant_1
 #changed the pw smh
 lib64/
 parts/
