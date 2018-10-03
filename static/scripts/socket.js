@@ -39,7 +39,18 @@ const inp_res = document.getElementById('inp-results');
             const span = document.createElement('span');
             div.setAttribute('data-im', js.id);
             div.onclick = function () {
-                window.location = `/movie/${this.getAttribute('data-im')}/watch-suggested/`;
+                Beacon.send('/collect/', {
+                    type: 'movieclick',
+                    main: {
+                        data: [{
+                            movie: js.movie,
+                            query: window.___currentWsMsg__,
+                        }],
+                        ua: navigator.userAgent,
+                        touch: (navigator.maxTouchPoints > 0)
+                    }
+                })
+                window.location = `/movie/${this.getAttribute('data-im')}/watch/`;
             };
             div.style.cursor = 'pointer';
             div.style.userSelect = 'none';

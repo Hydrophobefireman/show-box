@@ -201,6 +201,17 @@ function build_player(data, key, eid) {
             var ifr = document.getElementById("player-frame");
             document.getElementById("ifr-bx").removeChild(ifr);
             console.log(this.getAttribute("data"));
+            Beacon.send('/collect/', {
+                type: 'moviewatch',
+                main: {
+                    data: [{
+                        movie: document.querySelector('meta[name="movie"]').content,
+                        url: target.getAttribute("data")
+                    }],
+                    ua: navigator.userAgent,
+                    touch: (navigator.maxTouchPoints > 0)
+                }
+            })
             ifr.src = this.getAttribute("data");
             document.getElementById("ifr-bx").appendChild(ifr);
         }

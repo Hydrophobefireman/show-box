@@ -7,7 +7,7 @@ import secrets
 import threading
 import time
 import uuid
-from urllib.parse import quote, unquote
+from urllib.parse import quote, unquote, urlparse
 
 # import psycopg2
 from quart import (
@@ -30,7 +30,9 @@ from flask_tools import flaskUtils
 
 app = Quart(__name__)
 app.config["FORCE_HTTPS_ON_PROD"] = True
-app.secret_key = ">%b3VAi&^{G"
+app.secret_key = os.environ.get("db_pass_insig") or open_and_read(
+    ".dbpass-insignificant"
+)
 dburl = os.environ.get("DATABASE_URL")
 flaskUtils(app=app)
 
@@ -125,6 +127,28 @@ def generate_id() -> str:
 
 def gen_rn() -> int:
     return random.randint(10, 17)
+
+
+def is_heroku(url):
+    parsedurl = urlparse(url).netloc
+    return (
+        "127.0.0.1" not in parsedurl
+        or "localhost" not in parsedurl
+        or "192.168." not in parsedurl
+    ) and "herokuapp" in parsedurl
+
+
+class DataLytics(db.Model):
+    idx = db.Column(db.Integer, primary_key=True)
+    actions = db.Column(db.PickleType)
+    _type = db.Column(db.String(100))
+
+    def __init__(self, _type, act):
+        self.actions = act
+        self._type = _type
+
+    def __repr__(self):
+        return f"<DATA-ID:{self.idx}>"
 
 
 class tvRequests(db.Model):
@@ -549,6 +573,64 @@ async def redir():
 async def set_dl():
     session["site-select"] = request.args.get("dl")
     return redirect(session["site-select"], status_code=301)
+
+
+@app.route("/admin/", methods=["POST", "GET"])
+async def randomstuff():
+    pw = app.secret_key
+    if request.method == "GET":
+        return html_minify(await render_template("admin.html"))
+    else:
+        if not is_heroku(request.url):
+            print("Local")
+            session["admin-auth"] = True
+            resp = 1
+        else:
+            if session.get("admin-auth"):
+                return Response(json.dumps({"response": -1}))
+            form = await request.form
+            _pass = form["pass"]
+            session["admin-auth"] = _pass == pw
+            if not session["admin-auth"]:
+                resp = "0"
+            else:
+                resp = "1"
+    return Response(json.dumps({"response": resp}), content_type="application/json")
+
+
+@app.route("/admin/get-data/", methods=["POST"])
+async def see_data():
+    if not session.get("admin-auth"):
+        return Response(json.dumps({}))
+    _ = ("search", "moviewatch", "recommend", "movieclick")
+    form = await request.form
+    _type_ = form["type"].lower()
+    _filter = [s.actions for s in DataLytics.query.filter_by(_type=_type_).all()]
+    data = {"result": _filter}
+    return Response(json.dumps(data), content_type="application/json")
+
+
+@app.route("/collect/", methods=["POST", "GET"])
+async def collect():
+    if request.method == "POST":
+        _data = await request.data
+        data = json.loads(_data.decode())
+    else:
+        data = dict(request.args)
+    if not is_heroku(request.url):
+        print("Local Env")
+        print(data)
+        return ""
+    col = DataLytics(data["type"].lower(), data["main"])
+    db.session.add(col)
+    db.session.commit()
+    return ""
+
+
+@app.route("/beacon-test", methods=["POST"])
+async def bcontest():
+    await request.data
+    return ""
 
 
 if __name__ == "__main__":

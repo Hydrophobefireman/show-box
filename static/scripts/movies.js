@@ -9,6 +9,16 @@
     fetch(request)
         .then(response => response.text())
         .then(response => {
+            Beacon.send('/collect/', {
+                type: 'search',
+                main: {
+                    ua: navigator.userAgent,
+                    touch = (navigator.maxTouchPoints > 0),
+                    data: [{
+                        query: document.getElementById('jinja-data-query').getAttribute("content")
+                    }]
+                }
+            })
             gen_results(response);
         }).catch(e => {
             console.error(e)
@@ -53,7 +63,9 @@ const gen_results = (names) => {
 const gen_img = (img, imgURL) => {
     const compat_url = window["URL"] || window["webkitURL"];
     const req = new Request(imgURL);
-    img.onload = ({target}) => {
+    img.onload = ({
+        target
+    }) => {
         compat_url.revokeObjectURL(target.src)
     }
     fetch(req)
