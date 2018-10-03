@@ -509,7 +509,7 @@ async def socket_conn():
             )
             return
         json_data = {"data": []}
-        names = get_all_results(req_if_not_heroku=False, url=request.url)
+        names = get_all_results(req_if_not_heroku=False, url=websocket.url)
         json_data["data"] = [
             s for s in names if re.search(r".*?%s" % (query), s["movie"], re.IGNORECASE)
         ]
