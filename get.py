@@ -79,8 +79,8 @@ def get_all_results(request_if_not_heroku=True, number=0, shuffle=True):
             __data__ = data
         except Exception as e:
             print(e)
-    elif not request_if_not_heroku:
-        print("KE")
+    elif request_if_not_heroku:
+        print("Fetching Data")
         _data = tvData.query.all()
         for url in _data:
             jsdata.append(
@@ -92,7 +92,7 @@ def get_all_results(request_if_not_heroku=True, number=0, shuffle=True):
                 }
             )
         _meta = json.dumps({"stamp": time.time(), "data": {"movies": jsdata}})
-        open_and_write(db_cache_file, _meta)
+        open_and_write(db_cache_file, "w", _meta)
         __data__ = jsdata
     else:
         return []
@@ -509,8 +509,7 @@ async def socket_conn():
             )
             return
         json_data = {"data": []}
-        print("LL")
-        names = get_all_results()
+        names = get_all_results(request_if_not_heroku=False)
         json_data["data"] = [
             s for s in names if re.search(r".*?%s" % (query), s["movie"], re.IGNORECASE)
         ]
