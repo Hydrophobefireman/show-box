@@ -5,3 +5,4 @@ beautifulsoup4==4.6.0
 django-htmlmin==0.10.0
 cloudinary==1.12.0
 quart==0.6.6
+hypercorn==0.2.4
