@@ -68,7 +68,7 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
                     (KHTML, like Gecko) Chrome/66.0.3343.3 Safari/537.36"
 
 
-def get_all_results(request_if_not_heroku=True, number=0, shuffle=True):
+def get_all_results(req_if_not_heroku=False, number=0, shuffle=True, url=None):
     db_cache_file = os.path.join(app.root_path, ".db-cache--all")
     jsdata = __data__ = []
     data = None
@@ -79,7 +79,7 @@ def get_all_results(request_if_not_heroku=True, number=0, shuffle=True):
             __data__ = data
         except Exception as e:
             print(e)
-    elif request_if_not_heroku:
+    elif is_heroku(str(url)) or not is_heroku(str(url)) and req_if_not_heroku:
         print("Fetching Data")
         _data = tvData.query.all()
         for url in _data:
@@ -316,7 +316,7 @@ async def get_all():
     json_data["movies"] = []
     if session["req-all"] != forms:
         return "!cool"
-    movs = get_all_results(shuffle=True)
+    movs = get_all_results(shuffle=True, url=request.url)
     json_data["movies"] = movs
     res = await make_response(json.dumps(json_data))
     res.headers["X-Sent-Cached"] = str(False)
@@ -509,7 +509,7 @@ async def socket_conn():
             )
             return
         json_data = {"data": []}
-        names = get_all_results(request_if_not_heroku=False)
+        names = get_all_results(req_if_not_heroku=False, url=request.url)
         json_data["data"] = [
             s for s in names if re.search(r".*?%s" % (query), s["movie"], re.IGNORECASE)
         ]
@@ -637,5 +637,5 @@ async def bcontest():
 
 
 if __name__ == "__main__":
-    app.run( host="0.0.0.0", port=5000, use_reloader=True)
+    app.run(host="0.0.0.0", port=5000, use_reloader=True)
 
