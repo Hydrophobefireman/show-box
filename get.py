@@ -30,17 +30,8 @@ from flask_tools import flaskUtils
 
 app = Quart(__name__)
 app.config["FORCE_HTTPS_ON_PROD"] = True
-app.secret_key = os.environ.get("db_pass_insig") or open_and_read(
-    ".dbpass-insignificant"
-)
 dburl = os.environ.get("DATABASE_URL")
 flaskUtils(app=app)
-
-
-def open_and_write(fn: str, mode: str = "w", data=None) -> None:
-    with open(fn, mode) as f:
-        f.write(data)
-    return
 
 
 def open_and_read(fn: str, mode: str = "r", strip: bool = True):
@@ -50,6 +41,17 @@ def open_and_read(fn: str, mode: str = "r", strip: bool = True):
         else:
             data = f.read()
     return data
+
+
+def open_and_write(fn: str, mode: str = "w", data=None) -> None:
+    with open(fn, mode) as f:
+        f.write(data)
+    return
+
+
+app.secret_key = os.environ.get("db_pass_insig") or open_and_read(
+    ".dbpass-insignificant"
+)
 
 
 try:
@@ -77,7 +79,8 @@ def get_all_results(request_if_not_heroku=True, number=0, shuffle=True):
             __data__ = data
         except Exception as e:
             print(e)
-    elif request_if_not_heroku:
+    elif not request_if_not_heroku:
+        print("KE")
         _data = tvData.query.all()
         for url in _data:
             jsdata.append(
@@ -506,6 +509,7 @@ async def socket_conn():
             )
             return
         json_data = {"data": []}
+        print("LL")
         names = get_all_results()
         json_data["data"] = [
             s for s in names if re.search(r".*?%s" % (query), s["movie"], re.IGNORECASE)

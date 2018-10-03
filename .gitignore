@@ -15,6 +15,8 @@ downloads/
 eggs/
 .eggs/
 lib/
+.dbpass-insignificant
+#changed the pw smh
 lib64/
 parts/
 sdist/
