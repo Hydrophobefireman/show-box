@@ -511,7 +511,9 @@ async def socket_conn():
         json_data = {"data": []}
         names = get_all_results(req_if_not_heroku=False, url=websocket.url)
         json_data["data"] = [
-            s for s in names if re.search(r".*?%s" % (query), s["movie"], re.IGNORECASE)
+            s
+            for s in names
+            if re.search(r".*?%s" % (re.escape(query)), s["movie"], re.IGNORECASE)
         ]
         if len(json_data["data"]) == 0:
             await websocket.send(json.dumps({"no-res": True}))
@@ -638,4 +640,5 @@ async def bcontest():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, use_reloader=True)
+
 

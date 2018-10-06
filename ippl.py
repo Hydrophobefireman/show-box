@@ -48,7 +48,7 @@ def get_(url: str, v: bool = True, n: int = 1, season: int = 0) -> None:
     dict_print(basic_headers, v=v)
     page = sess.get(url, headers=basic_headers, allow_redirects=True)
     to_screen([colors.OKBLUE + "[debug]" + colors.ENDC + "Page URL:", page.url], v)
-    soup = bs(page.text, "html.parser")
+    soup = bs(page.text, "html5lib")
     to_screen(["\n" + colors.OKBLUE + "[debug]" + colors.ENDC + "Finding Title"], v)
     title = soup.find("input", attrs={"name": "movies_title"}).attrs["value"]
     to_screen([colors.OKBLUE + "[debug]" + colors.ENDC + "Found:", title], v)
@@ -81,9 +81,9 @@ def get_(url: str, v: bool = True, n: int = 1, season: int = 0) -> None:
     to_screen([colors.OKBLUE + "[debug]" + colors.ENDC + "Adding Origin to headers"], v)
     basic_headers = {**basic_headers, "Origin": origin}
     div = (
-        soup.find(attrs={"id": "list-eps"})
+        soup.find(attrs={"id": "ip_episode"})
+        or soup.find(attrs={"id": "list-eps"})
         or soup.find(attrs={"class": "pas-list"})
-        or soup.find(attrs={"id": "ip_episode"})
     )
     to_screen([colors.OKBLUE + "[debug]" + colors.ENDC + "Finding Ipplayer Configs"], v)
     if div is None:
@@ -214,11 +214,11 @@ def get_(url: str, v: bool = True, n: int = 1, season: int = 0) -> None:
         if all(s is None for s in data):
             data = []
             print(colors.BOLD + "[info]" + colors.ENDC + "no urls for episode:", i)
-            a = input("Enter URL1:")
+            a = input("Enter URL1:") or None
             b = input("Enter URL2:")
             if len(b) < 5:
                 b = None
-            c = input("Enter URL2:")
+            c = input("Enter URL3:")
             if len(c) < 5:
                 c = None
             data = [a, b, c]

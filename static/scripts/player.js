@@ -181,9 +181,9 @@ function build_player(data, key, eid) {
         btn.setAttribute("data", url);
         btn.innerHTML = extractHostname(url);
         if (extractHostname(url) == "null" || extractHostname(url).toLowerCase() == 'none') {
-            btn.remove();
-            btndl.remove();
-            linkdl.remove();
+            btn.style.display = 'none';
+            btndl.style.display = 'none';
+            linkdl.style.display = 'none';
             return
         } else {
             btn.style.display = 'inline';
@@ -191,7 +191,7 @@ function build_player(data, key, eid) {
             /* chrome will outright block any iframe in http */
         }
         btndl.style.display = btn.style.display;
-        btndl.innerHTML = btn.innerHTML; //?url=" + encodeURIComponent(url);
+        btndl.innerHTML = btn.innerHTML;
         linkdl.href = "/out" + urlencode({
             'url': url,
             "title": window.movie_title + " episode:" + eid
