@@ -103,6 +103,27 @@ def get_all_results(req_if_not_heroku=False, number=0, shuffle=True, url=None):
         return __data__
 
 
+def generate_id() -> str:
+    lst_ = secrets.token_urlsafe()
+    return lst_[: gen_rn()]
+
+
+def gen_rn() -> int:
+    return random.randint(10, 17)
+
+
+def is_heroku(url):
+    parsedurl = urlparse(url).netloc
+    return (
+        "127.0.0.1" not in parsedurl
+        or "localhost" not in parsedurl
+        or "192.168." not in parsedurl
+    ) and "herokuapp" in parsedurl
+
+
+# pylint: disable=E1101
+
+
 class tvData(db.Model):
     mid = db.Column(db.String, primary_key=True)
     movie = db.Column(db.String(100))
@@ -121,24 +142,6 @@ class tvData(db.Model):
 
     def __repr__(self):
         return "<Name %r>" % self.movie
-
-
-def generate_id() -> str:
-    lst_ = secrets.token_urlsafe()
-    return lst_[: gen_rn()]
-
-
-def gen_rn() -> int:
-    return random.randint(10, 17)
-
-
-def is_heroku(url):
-    parsedurl = urlparse(url).netloc
-    return (
-        "127.0.0.1" not in parsedurl
-        or "localhost" not in parsedurl
-        or "192.168." not in parsedurl
-    ) and "herokuapp" in parsedurl
 
 
 class DataLytics(db.Model):
@@ -179,6 +182,8 @@ class deadLinks(db.Model):
     def __repr__(self):
         return "<Name %r>" % self.movieid
 
+# pylint: enable=E1101
+
 
 @app.route("/robots.txt")
 async def check__():
@@ -217,8 +222,10 @@ async def parse_report():
         form = await request.form
         mid = form["id"]
         col = deadLinks(mid)
+        # pylint: disable=E1101
         db.session.add(col)
         db.session.commit()
+        # pylint: enable=E1101
         return "Response recorded.Thank You for your help!"
     except Exception as e:
         print(e)
@@ -555,8 +562,10 @@ async def add_():
         season = data["season"]
         episodes = data["episodes"]
         col = tvData(title, thumb, season, episodes)
+        # pylint: disable=E1101
         db.session.add(col)
         db.session.commit()
+        # pylint: enable=E1101
         print(col)
         return str(col)
     except Exception as e:
@@ -627,8 +636,10 @@ async def collect():
         print(data)
         return ""
     col = DataLytics(data["type"].lower(), data["main"])
+    # pylint: disable=E1101
     db.session.add(col)
     db.session.commit()
+    # pylint: enable=E1101
     return ""
 
 
@@ -640,5 +651,3 @@ async def bcontest():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, use_reloader=True)
-
-
