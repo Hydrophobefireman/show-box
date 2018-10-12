@@ -401,6 +401,7 @@ async def send_movie(mid, mdata):
 @app.route("/data-parser/plugins/player/", methods=["POST"])
 async def plugin():
     _mid = await request.form
+    print(_mid)
     mid = _mid["id"]
     if _mid["nonce"] != session["req_nonce"]:
         return "Lol"
@@ -428,6 +429,7 @@ async def plugin():
     else:
         os.mkdir(".player-cache")
     data = tvData.query.filter_by(mid=mid).first()
+    print(mid,data)
     common_ = {
         "season": data.season,
         "episode_meta": len(data.episodes),
@@ -615,12 +617,14 @@ async def randomstuff():
 @app.route("/admin/get-data/", methods=["POST"])
 async def see_data():
     if not session.get("admin-auth"):
+        print("no auth")
         return Response(json.dumps({}))
     _ = ("search", "moviewatch", "recommend", "movieclick")
     form = await request.form
     _type_ = form["type"].lower()
     _filter = [s.actions for s in DataLytics.query.filter_by(_type=_type_).all()]
     data = {"result": _filter}
+    print(data)
     return Response(json.dumps(data), content_type="application/json")
 
 
