@@ -1,31 +1,25 @@
 import base64
+import hashlib
 import json
 import os
 import random
 import re
 import secrets
+import shutil
 import threading
 import time
 import uuid
 from urllib.parse import quote, unquote, urlparse
 
-# import psycopg2
-from quart import (
-    Quart,
-    Response,
-    make_response,
-    redirect,
-    websocket,
-    render_template,
-    request,
-    send_from_directory,
-    session,
-)
+from bs4 import BeautifulSoup as bs
 from flask_sqlalchemy import SQLAlchemy
 from htmlmin.minify import html_minify
+# import psycopg2
+from quart import (Quart, Response, make_response, redirect, render_template,
+                   request, send_from_directory, session, websocket)
+
 from api import ippl_api
 from dbmanage import req_db
-
 from flask_tools import flaskUtils
 
 app = Quart(__name__)
@@ -66,6 +60,68 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
                     (KHTML, like Gecko) Chrome/66.0.3343.3 Safari/537.36"
+
+
+scripts_dir = os.path.join(app.root_path, "static", "dist")
+if not os.path.isdir(scripts_dir):
+    os.mkdir(scripts_dir)
+
+
+def resolve_local_url(url):
+    # all static assets are location in /static folder..so we dont care about urls like "./"
+    if url.startswith("/"):
+        return url
+    elif url.startswith("."):
+        url = url.lstrip(".")
+    if url.startswith("static"):
+        return "/" + url
+    else:
+        return url
+
+
+def parse_local_assets(html):
+    soup = bs(html, "html5lib")
+    assets = soup.find_all(
+        lambda x: (
+            x.name == "script"
+            and resolve_local_url(x.attrs.get("src", "")).startswith("/")
+        )
+        or (
+            x.name == "link"
+            and resolve_local_url(x.attrs.get("href", "")).startswith("/")
+            and "stylesheet" in x.attrs.get("rel", "")
+        )  # Relative urls
+    )
+    for data in assets:
+        ftype = data.name
+        attr, ext = ("src", ".js") if ftype == "script" else ("href", ".css")
+        src = data.attrs.get(attr)
+        print(f"Parsing asset->{src}")
+        if src.startswith("/"):
+            src = src[1:]
+        _file = os.path.join(app.root_path, src)
+        checksum = checksum_f(_file)
+        name = checksum + ext
+        location = os.path.join("static", "dist", name)
+        if os.path.isfile(os.path.join(app.root_path, location)):
+            print("No change in file..skipping")
+        else:
+            shutil.copyfile(_file, os.path.join(app.root_path, location))
+        data.attrs[attr] = f"/{location}"
+    return str(soup)
+
+
+def checksum_f(filename, meth="sha256"):
+    foo = getattr(hashlib, meth)()
+    _bytes = 0
+    total = os.path.getsize(filename)
+    with open(filename, "rb") as f:
+        while _bytes <= total:
+            f.seek(_bytes)
+            chunk = f.read(1024 * 4)
+            foo.update(chunk)
+            _bytes += 1024 * 4
+    return foo.hexdigest()
 
 
 def get_all_results(req_if_not_heroku=False, number=0, shuffle=True, url=None):
@@ -182,6 +238,7 @@ class deadLinks(db.Model):
     def __repr__(self):
         return "<Name %r>" % self.movieid
 
+
 # pylint: enable=E1101
 
 
@@ -198,7 +255,7 @@ async def index():
         d = "Thanks for helping us out!"
     else:
         d = " "
-    return html_minify(await render_template("index.html", msg=d))
+    return parse_local_assets(html_minify(await render_template("index.html", msg=d)))
 
 
 @app.route("/report/")
@@ -211,8 +268,10 @@ async def report_dead():
         return "No movie associated with given id"
     thumb = meta_.thumb
     title = meta_.moviedisplay
-    return await render_template(
-        "link-report.html", m_id=m_id, title=title, thumb=thumb
+    return await parse_local_assets(
+        html_minify(
+            render_template("link-report.html", m_id=m_id, title=title, thumb=thumb)
+        )
     )
 
 
@@ -241,12 +300,12 @@ async def send_m():
         return "Specify a term!"
     q = request.args.get("q")
 
-    return html_minify(await render_template("movies.html", q=q))
+    return parse_local_assets(html_minify(await render_template("movies.html", q=q)))
 
 
 @app.route("/help-us/")
 async def ask_get():
-    return html_minify(await render_template("help.html"))
+    return parse_local_assets(html_minify(await render_template("help.html")))
 
 
 @app.route("/db-manage/parse-requests/", methods=["POST"])
@@ -279,7 +338,9 @@ async def serchs():
     json_data["movies"] = []
     q = re.sub(r"([^\w]|_)", "", form["q"]).lower()
     print("Search For:", q)
-    urls = tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q))).all()
+    urls = tvData.query.filter(
+        tvData.movie.op("~")(r"(?s).*?%s" % (re.escape(q)))
+    ).all()
     urls.sort(key=movie_list_sort)
     for url in urls:
         json_data["movies"].append(
@@ -298,7 +359,9 @@ async def err_configs():
 @app.route("/all/")
 async def all_movies():
     session["req-all"] = (generate_id() + generate_id())[:20]
-    return html_minify(await render_template("all.html", data=session["req-all"]))
+    return parse_local_assets(
+        html_minify(await render_template("all.html", data=session["req-all"]))
+    )
 
 
 @app.route("/fetch-token/configs/", methods=["POST"])
@@ -354,13 +417,15 @@ async def send_movie(mid, mdata):
             try:
                 data = json.loads(f.read())
                 res = await make_response(
-                    html_minify(
-                        await render_template(
-                            "player.html",
-                            nonce=session["req_nonce"],
-                            movie=data["movie_name"],
-                            og_url=request.url,
-                            og_image=data["thumbnail"],
+                    parse_local_assets(
+                        html_minify(
+                            await render_template(
+                                "player.html",
+                                nonce=session["req_nonce"],
+                                movie=data["movie_name"],
+                                og_url=request.url,
+                                og_image=data["thumbnail"],
+                            )
                         )
                     )
                 )
@@ -384,13 +449,15 @@ async def send_movie(mid, mdata):
         }
         f.write(json.dumps(data_js))
     res = await make_response(
-        html_minify(
-            await render_template(
-                "player.html",
-                nonce=session["req_nonce"],
-                movie=movie_name,
-                og_url=request.url,
-                og_image=thumbnail,
+        parse_local_assets(
+            html_minify(
+                await render_template(
+                    "player.html",
+                    nonce=session["req_nonce"],
+                    movie=movie_name,
+                    og_url=request.url,
+                    og_image=thumbnail,
+                )
             )
         )
     )
@@ -484,7 +551,7 @@ async def b404():
 
 @app.route("/media/add/")
 async def add_show():
-    return await render_template("shows-add.html")
+    return await parse_local_assets(html_minify(render_template("shows-add.html")))
 
 
 @app.route("/media/add-shows/fetch/")
@@ -546,7 +613,11 @@ async def add_show_lookup():
         )
     thread = threading.Thread(target=ippl_api.get_, args=(_show_url, title))
     thread.start()
-    return await render_template("shows_add_evt.html", show_url=_show_url, show=title)
+    return await parse_local_assets(
+        html_minify(
+            render_template("shows_add_evt.html", show_url=_show_url, show=title)
+        )
+    )
 
 
 @app.route("/sec/add/", methods=["POST"])
@@ -580,7 +651,12 @@ async def redir():
     title = request.args.get("title", "TV Show")
     if url.startswith("//"):
         url = "https:" + url
-    return await render_template("sites.html", url=url, site=site, title=title), 300
+    return (
+        await parse_local_assets(
+            render_template("sites.html", url=url, site=site, title=title)
+        ),
+        300,
+    )
 
 
 @app.route("/set-downloader/")
@@ -593,7 +669,7 @@ async def set_dl():
 async def randomstuff():
     pw = app.secret_key
     if request.method == "GET":
-        return html_minify(await render_template("admin.html"))
+        return parse_local_assets(html_minify(await render_template("admin.html")))
     else:
         if not is_heroku(request.url):
             print("Local")

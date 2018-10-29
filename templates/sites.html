@@ -29,35 +29,39 @@
         </div>
     </div>
     <script>
-        "use strict";
-        ! function () {
-            var e = {
-                    "PROXY-PY.HEROKUAPP.COM": {
-                        id: "proxy-dl",
-                        link: "https://proxy-py.herokuapp.com/api/parse_query?url="
-                    },
-                    "DL-JS.HEROKUAPP.COM": {
-                        id: "dl-js",
-                        link: "https://dl-js.herokuapp.com/video/?url="
-                    },
-                    "PROXY-DL.HEROKUAPP.COM": {
-                        id: "proxy-dl",
-                        link: "https://proxy-dl.herokuapp.com/video?url="
-                    }
+        !(() => {
+            const e = {
+                "PROXY-PY.HEROKUAPP.COM": {
+                    id: "proxy-dl",
+                    link: "https://proxy-py.herokuapp.com/api/parse_query?url="
                 },
-                t = Object.keys(e),
-                n = !0,
-                r = !1,
-                o = void 0;
+                "DL-JS.HEROKUAPP.COM": {
+                    id: "dl-js",
+                    link: "https://dl-js.herokuapp.com/video/?url="
+                },
+                "DL-PY.HEROKUAPP.COM": {
+                    id: "dl-js",
+                    link: "https://dl-py.herokuapp.com/video/?url="
+                },
+                "PROXY-DL.HEROKUAPP.COM": {
+                    id: "proxy-dl",
+                    link: "https://proxy-dl.herokuapp.com/video?url="
+                }
+            };
+
+            const t = Object.keys(e);
+            let n = !0;
+            let r = !1;
+            let o = void 0;
             try {
                 for (var d, i = t[Symbol.iterator](); !(n = (d = i.next()).done); n = !0) {
-                    var l = d.value,
+                    const l = d.value,
                         a = document.createElement("div"),
                         p = document.createElement("a");
                     a.style.margin = '5px';
                     a.id = e[l].id;
-                    var c = e[l].link + encodeURIComponent("{{url}}");
-                    p.href = "/set-downloader/?dl=" + encodeURIComponent(c), a.innerHTML = l, p.appendChild(a),
+                    const c = e[l].link + encodeURIComponent("{{url}}");
+                    p.href = `/set-downloader/?dl=${encodeURIComponent(c)}`, a.innerHTML = l, p.appendChild(a),
                         document.getElementById("content").appendChild(p)
                 }
             } catch (e) {
@@ -69,10 +73,10 @@
                     if (r) throw o
                 }
             }
-        }();
-        var site = function (e) {
+        })();
+        const site = e => {
             try {
-                var t = new URL(e).hostname;
+                const t = new URL(e).hostname;
                 document.getElementById("site_").innerHTML = t
             } catch (e) {
                 document.getElementById("site_").innerHTML = "None"
