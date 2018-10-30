@@ -14,9 +14,19 @@ from urllib.parse import quote, unquote, urlparse
 from bs4 import BeautifulSoup as bs
 from flask_sqlalchemy import SQLAlchemy
 from htmlmin.minify import html_minify
+
 # import psycopg2
-from quart import (Quart, Response, make_response, redirect, render_template,
-                   request, send_from_directory, session, websocket)
+from quart import (
+    Quart,
+    Response,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+    websocket,
+)
 
 from api import ippl_api
 from dbmanage import req_db
@@ -268,9 +278,11 @@ async def report_dead():
         return "No movie associated with given id"
     thumb = meta_.thumb
     title = meta_.moviedisplay
-    return await parse_local_assets(
+    return parse_local_assets(
         html_minify(
-            render_template("link-report.html", m_id=m_id, title=title, thumb=thumb)
+            await render_template(
+                "link-report.html", m_id=m_id, title=title, thumb=thumb
+            )
         )
     )
 
@@ -496,7 +508,7 @@ async def plugin():
     else:
         os.mkdir(".player-cache")
     data = tvData.query.filter_by(mid=mid).first()
-    print(mid,data)
+    print(mid, data)
     common_ = {
         "season": data.season,
         "episode_meta": len(data.episodes),
@@ -553,7 +565,7 @@ async def b404():
 
 @app.route("/media/add/")
 async def add_show():
-    return await parse_local_assets(html_minify(render_template("shows-add.html")))
+    return parse_local_assets(html_minify(await render_template("shows-add.html")))
 
 
 @app.route("/media/add-shows/fetch/")
@@ -615,9 +627,9 @@ async def add_show_lookup():
         )
     thread = threading.Thread(target=ippl_api.get_, args=(_show_url, title))
     thread.start()
-    return await parse_local_assets(
+    return parse_local_assets(
         html_minify(
-            render_template("shows_add_evt.html", show_url=_show_url, show=title)
+            await render_template("shows_add_evt.html", show_url=_show_url, show=title)
         )
     )
 
@@ -654,8 +666,8 @@ async def redir():
     if url.startswith("//"):
         url = "https:" + url
     return (
-        await parse_local_assets(
-            render_template("sites.html", url=url, site=site, title=title)
+        parse_local_assets(
+            await render_template("sites.html", url=url, site=site, title=title)
         ),
         300,
     )
