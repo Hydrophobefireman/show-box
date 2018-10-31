@@ -105,7 +105,7 @@ def parse_local_assets(html):
     for data in assets:
         ftype = data.name
         attr, ext = ("src", ".js") if ftype == "script" else ("href", ".css")
-        src = data.attrs.get(attr)
+        src = resolve_local_url(data.attrs.get(attr))
         print(f"Parsing asset->{src}")
         if src.startswith("/"):
             src = src[1:]
