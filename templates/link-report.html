@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <meta name="keywords" content="report,TV Series" />
+    <meta name="keywords" content="report,movies" />
     <meta name='og:description' content="report dead links for {{title}}" />
     <meta name='description' content="report dead links for {{title}}" />
     <meta name='og:image' content="{{thumb|safe}}" />
     <meta name='og:title' content="report dead links for {{title}}" />
-    <meta name='og:site_name' content="Shows-Box" />
+    <meta name='og:site_name' content="movies-get" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <script src='/static/jsmin/data.js'></script>
     <title>report dead links for {{title}}</title>
     <style>
         .submit-button {
@@ -57,16 +58,17 @@
                 <a class=links href='/'>
                     <span class='h-link'>Home Page</span>
                 </a>
-                <a class=links id='all' href=/all> <span class='h-link'>All TV Series</span>
+                <a class=links id='all' href=/all> <span class='h-link'>All Movies</span>
                 </a>
             </div>
             <div id=report-box></div>
-            <div>Type in The episode number</div>
-            <input id=episode-name>
             <button class=submit-button id=sbmit-report style=margin-top:15px;>Submit Report</button>
             <div id=sub-success-error style=margin:20px;>
 
             </div>
+            <script>
+                window._title = "{{title}}";
+            </script>
             <script src='/static/jsmin/report.js'>
             </script>
         </div>

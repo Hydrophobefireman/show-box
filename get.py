@@ -30,12 +30,10 @@ from quart import (
 
 from api import ippl_api
 from dbmanage import req_db
-from flask_tools import flaskUtils
 
 app = Quart(__name__)
 app.config["FORCE_HTTPS_ON_PROD"] = True
 dburl = os.environ.get("DATABASE_URL")
-flaskUtils(app=app)
 
 
 def open_and_read(fn: str, mode: str = "r", strip: bool = True):
@@ -477,6 +475,13 @@ async def send_movie(mid, mdata):
     return res
 
 
+@app.route("/favicon.ico")
+async def send_fav():
+    return await send_from_directory(
+        os.path.join(app.root_path, "static"), "favicon.ico"
+    )
+
+
 @app.route("/data-parser/plugins/player/", methods=["POST"])
 async def plugin():
     _mid = await request.form
@@ -740,6 +745,9 @@ async def bcontest():
     await request.data
     return ""
 
+
+# for heroku nginx
+open("/tmp/app-initialized", "w").close()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, use_reloader=True)
