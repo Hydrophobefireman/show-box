@@ -182,7 +182,7 @@ def is_heroku(url):
         "127.0.0.1" not in parsedurl
         or "localhost" not in parsedurl
         or "192.168." not in parsedurl
-    ) and "herokuapp" in parsedurl
+    ) and ("herokuapp" in parsedurl or "ws://app_server/" in url)
 
 
 # pylint: disable=E1101
