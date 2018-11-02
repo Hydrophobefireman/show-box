@@ -143,7 +143,7 @@ def get_all_results(req_if_not_heroku=False, number=0, shuffle=True, url=None):
             __data__ = data
         except Exception as e:
             print(e)
-    elif is_heroku(str(url)) or not is_heroku(str(url)) and req_if_not_heroku:
+    elif is_heroku(str(url)) or (not is_heroku(str(url)) and req_if_not_heroku):
         print("Fetching Data")
         _data = tvData.query.all()
         for url in _data:
@@ -602,7 +602,10 @@ async def socket_conn():
             )
             return
         json_data = {"data": []}
-        names = get_all_results(req_if_not_heroku=False, url=websocket.url)
+        __f = False
+        if is_heroku(websocket.url):
+            __f = True
+        names = get_all_results(req_if_not_heroku=__f, url=websocket.url)
         json_data["data"] = [
             s
             for s in names
