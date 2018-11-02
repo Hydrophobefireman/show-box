@@ -603,7 +603,9 @@ async def socket_conn():
             return
         json_data = {"data": []}
         __f = False
+        print(websocket.url)
         if is_heroku(websocket.url):
+
             __f = True
         names = get_all_results(req_if_not_heroku=__f, url=websocket.url)
         json_data["data"] = [
