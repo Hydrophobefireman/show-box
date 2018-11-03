@@ -741,7 +741,10 @@ async def bcontest():
 
 
 # for heroku nginx
-open("/tmp/app-initialized", "w").close()
+@app.before_serving
+def open_to_nginx():
+    open("/tmp/app-initialized", "w").close()
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, use_reloader=True)
