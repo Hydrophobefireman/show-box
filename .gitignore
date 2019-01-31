@@ -31,6 +31,7 @@ MANIFEST
 static/jsbin/
 
 #CUSTOM
+.config.json
 .db-cache--all
 .player-cache/
 js-obfs.js

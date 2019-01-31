@@ -1,40 +1,40 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta content="IE=edge" http-equiv="X-UA-Compatible" />
-    <title>{{show}}</title>
+    <title>{{ show }}</title>
     <meta content="width=device-width, initial-scale=1" name="viewport" />
-    <meta content="{{show_url}}" id="show_url" />
+    <meta content="{{ show_url }}" id="show_url" />
     <script>
-        var show_url = document.getElementById('show_url').content;
+      var show_url = document.getElementById("show_url").content;
     </script>
     <style>
-        body {
-            background-color: #f5f5f5
-        }
+      body {
+        background-color: #f5f5f5;
+      }
 
-        .center {
-            margin-left: auto;
-            margin-right: auto;
-            text-align: center
-        }
+      .center {
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="center">
-        <div class="main">
-            <div>We are adding {{show}} to our databases.Thank your for your help..tv shows can take some time to be added..keep
-                searching for
-                <a id="show_link_search">{{show}}</a> on our search page.
-                <script>
-                    document.getElementById('show_link_search').href = '/search?q=' + encodeURIComponent(document.title);
-                </script>
-            </div>
+      <div class="main">
+        <div>
+          We are adding {{ show }} to our databases.Thank your for your help..tv
+          shows can take some time to be added..keep searching for
+          <a id="show_link_search">{{ show }}</a> on our search page.
+          <script>
+            document.getElementById("show_link_search").href =
+              "/search?q=" + encodeURIComponent(document.title);
+          </script>
         </div>
+      </div>
     </div>
-</body>
-
+  </body>
 </html>

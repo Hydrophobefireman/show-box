@@ -1,61 +1,82 @@
 <html>
-
-<head>
+  <head>
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Watch shows</title>
-    <meta name="og:title" content="Search for- {{q}} on show-box" />
-    <meta name='og:site_name' content="show-box" />
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-    <meta name='og:description' content="Watch Unlimited shows For Free on Show-Box!" />
-    <meta name="description" content="Watch Unlimited shows For Free on show-box!" />
+    <meta name="og:title" content="Search for- {{ q }} on show-box" />
+    <meta name="og:site_name" content="show-box" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans"
+      rel="stylesheet"
+    />
+    <meta
+      name="og:description"
+      content="Watch Unlimited shows For Free on Show-Box!"
+    />
+    <meta
+      name="description"
+      content="Watch Unlimited shows For Free on show-box!"
+    />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="/static/cssmin/all.css">
-</head>
+    <link rel="stylesheet" href="/static/cssmin/all.css" />
+  </head>
 
-<body>
-    <div style="position:fixed;width:100%;top:0;margin-left:auto;margin-right:auto;padding: 8px;overflow: hidden;background: #333;text-align: center">
-        <a class=links href='/'>
-            <span class='h-link'>Home Page</span>
-        </a>
+  <body>
+    <div
+      style="position:fixed;width:100%;top:0;margin-left:auto;margin-right:auto;padding: 8px;overflow: hidden;background: #333;text-align: center"
+    >
+      <a class="links" href="/">
+        <span class="h-link">Home Page</span>
+      </a>
     </div>
     <div id="main">
-        <div class="center_stuff">
-            <div class="box-h-fa">
-                <div id=searchbox>
-                    <form action="/search">
-                        <input class=input_n style="outline: none" type="text" name="q" id='dynamic_inp'>
-                        <input type="submit" id=fr-ui7-2-g11g class=submit-button style="width:10%;" value='Go'>
-                        <div id='inp-results'></div>
-                    </form>
-                </div>
-                <div id="content">
-                    <div id=skelly>
-                        <div>
-                            <div class=img-skelly></div>
-                            <div class=title-skelly></div>
-                        </div>
-                        <div>
-                            <div class=img-skelly></div>
-                            <div class=title-skelly></div>
-                        </div>
-                        <div>
-                            <div class=img-skelly></div>
-                            <div class=title-skelly></div>
-                        </div>
-                        <div>
-                            <div class=img-skelly></div>
-                            <div class=title-skelly></div>
-                        </div>
-                    </div>
-                </div>
+      <div class="center_stuff">
+        <div class="box-h-fa">
+          <div id="searchbox">
+            <form action="/search">
+              <input
+                class="input_n"
+                style="outline: none"
+                type="text"
+                name="q"
+                id="dynamic_inp"
+              />
+              <input
+                type="submit"
+                id="fr-ui7-2-g11g"
+                class="submit-button"
+                style="width:10%;"
+                value="Go"
+              />
+              <div id="inp-results"></div>
+            </form>
+          </div>
+          <div id="content">
+            <div id="skelly">
+              <div>
+                <div class="img-skelly"></div>
+                <div class="title-skelly"></div>
+              </div>
+              <div>
+                <div class="img-skelly"></div>
+                <div class="title-skelly"></div>
+              </div>
+              <div>
+                <div class="img-skelly"></div>
+                <div class="title-skelly"></div>
+              </div>
+              <div>
+                <div class="img-skelly"></div>
+                <div class="title-skelly"></div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
     <script>
-        var __data = "{{data|safe}}";
+      var __data = "{{data|safe}}";
     </script>
     <script src="/static/jsmin/all.js"></script>
-    <script src='/static/jsmin/socket.js'></script>
-</body>
-
+    <script src="/static/jsmin/socket.js"></script>
+  </body>
 </html>

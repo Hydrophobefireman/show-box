@@ -29,6 +29,9 @@ from quart import (
 
 from api import ippl_api
 from dbmanage import req_db
+from set_env import set_env_vars
+
+set_env_vars()
 
 app = Quart(__name__)
 app.config["FORCE_HTTPS_ON_PROD"] = True
@@ -50,13 +53,9 @@ def open_and_write(fn: str, mode: str = "w", data=None) -> None:
     return
 
 
-app.secret_key = os.environ.get("db_pass_insig") or open_and_read(
-    ".dbpass-insignificant_1"
-)
-
-
+app.secret_key = os.environ.get("db_pass_insig")
 try:
-    dburl = os.environ.get("DATABASE_URL") or open_and_read(".dbinfo_")
+    dburl = os.environ.get("DATABASE_URL")
 except:
     raise Exception(
         "No DB url specified try add it to the environment or \
@@ -131,7 +130,7 @@ def checksum_f(filename, meth="sha256"):
     return foo.hexdigest()
 
 
-def get_all_results(req_if_not_heroku=False, number=0, shuffle=True, url=None):
+def get_all_results(req_if_not_heroku=True, number=0, shuffle=True, url=None):
     db_cache_file = os.path.join(app.root_path, ".db-cache--all")
     jsdata = __data__ = []
     data = None

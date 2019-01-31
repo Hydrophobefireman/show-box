@@ -1,18 +1,16 @@
 import cloudinary.uploader
 import os
 
+import set_env
+
+set_env.set_env_vars()
+
 
 def upload(imgurl: str) -> dict:
-    clapi_key = os.environ.get("key")
+    clapi_key = os.environ.get("clkey")
     clapi_secret = os.environ.get("cl_secret")
     if clapi_key is None:
-        try:
-            with open("a.cloudinary", "r") as f:
-                clapi_key = f.read().strip()
-            with open("b.cloudinary", "r") as f:
-                clapi_secret = f.read().strip()
-        except:
-            raise Exception("no key provided")
+        raise Exception("no key provided")
     cloudinary.config(
         cloud_name="media-proxy", api_key=clapi_key, api_secret=clapi_secret
     )

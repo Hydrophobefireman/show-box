@@ -1,22 +1,22 @@
 <html>
-
-<body>
+  <body>
     <script>
-        if (!(() => {
-                try {
-                    return window.self !== window.top;
-                } catch (e) {
-                    return true;
-                }
-            })()) {
-            window.location.replace("/");
-        }
+      if (
+        !(() => {
+          try {
+            return window.self !== window.top;
+          } catch (e) {
+            return true;
+          }
+        })()
+      ) {
+        window.location.replace("/");
+      }
     </script>
-    <div style='margin-left: auto;margin-right: auto;text-align: center'>
-        <div>
-            <span>Could Not Load player configs please try again later</span>
-        </div>
+    <div style="margin-left: auto;margin-right: auto;text-align: center">
+      <div>
+        <span>Could Not Load player configs please try again later</span>
+      </div>
     </div>
-</body>
-
+  </body>
 </html>
