@@ -7,7 +7,7 @@ set_env.set_env_vars()
 
 
 def upload(imgurl: str) -> dict:
-    clapi_key = os.environ.get("clkey")
+    clapi_key = os.environ.get("clapi_key")
     clapi_secret = os.environ.get("cl_secret")
     if clapi_key is None:
         raise Exception("no key provided")
