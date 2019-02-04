@@ -27,15 +27,18 @@ from quart import (
     websocket,
 )
 
-from api import ippl_api
+try:
+    from api import ippl_api
+except ImportError:
+    pass
 from dbmanage import req_db
 from set_env import set_env_vars
 
 set_env_vars()
-
+json_ctype = "application/json"
 app = Quart(__name__)
 app.config["FORCE_HTTPS_ON_PROD"] = True
-dburl = os.environ.get("DATABASE_URL")
+app.secret_key = os.environ.get("db_pass_insig")
 
 
 def open_and_read(fn: str, mode: str = "r", strip: bool = True):
@@ -53,14 +56,10 @@ def open_and_write(fn: str, mode: str = "w", data=None) -> None:
     return
 
 
-app.secret_key = os.environ.get("db_pass_insig")
 try:
     dburl = os.environ.get("DATABASE_URL")
 except:
-    raise Exception(
-        "No DB url specified try add it to the environment or \
-        create a .dbinfo_ file with the url"
-    )
+    raise Exception("No DB url specified try add it to the environment")
 app.config["SQLALCHEMY_DATABASE_URI"] = dburl
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
@@ -68,77 +67,47 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
                     (KHTML, like Gecko) Chrome/66.0.3343.3 Safari/537.36"
 
 
+# start WEB
 scripts_dir = os.path.join(app.root_path, "static", "dist")
 if not os.path.isdir(scripts_dir):
     os.mkdir(scripts_dir)
 
 
-def resolve_local_url(url):
-    # all static assets are location in /static folder..so we dont care about urls like "./"
-    if url.startswith("/"):
-        return url
-    elif url.startswith("."):
-        url = url.lstrip(".")
-    if url.startswith("static"):
-        return "/" + url
-    else:
-        return url
-
-
-def parse_local_assets(html):
-    soup = bs(html, "html.parser")
-    assets = soup.find_all(
-        lambda x: (
-            x.name == "script"
-            and resolve_local_url(x.attrs.get("src", "")).startswith("/")
-        )
-        or (
-            x.name == "link"
-            and resolve_local_url(x.attrs.get("href", "")).startswith("/")
-            and "stylesheet" in x.attrs.get("rel", "")
-        )  # Relative urls
-    )
-    for data in assets:
-        ftype = data.name
-        attr, ext = ("src", ".js") if ftype == "script" else ("href", ".css")
-        src = resolve_local_url(data.attrs.get(attr))
-        print(f"Parsing asset->{src}")
-        if src.startswith("/"):
-            src = src[1:]
-        _file = os.path.join(app.root_path, src)
-        checksum = checksum_f(_file)
-        name = checksum + ext
-        location = os.path.join("static", "dist", name)
-        if os.path.isfile(os.path.join(app.root_path, location)):
-            print("No change in file..skipping")
-        else:
-            shutil.copyfile(_file, os.path.join(app.root_path, location))
-        data.attrs[attr] = f"/{location}"
-    return str(soup)
-
-
-def checksum_f(filename, meth="sha256"):
-    foo = getattr(hashlib, meth)()
-    _bytes = 0
-    total = os.path.getsize(filename)
-    with open(filename, "rb") as f:
-        while _bytes <= total:
-            f.seek(_bytes)
-            chunk = f.read(1024 * 4)
-            foo.update(chunk)
-            _bytes += 1024 * 4
-    return foo.hexdigest()
+def from_cache_or_save(mid):
+    if not os.path.isdir(".player-cache"):
+        os.mkdir(".player-cache")
+    file_path = os.path.join(".player-cache", mid + ".json")
+    data: dict = None
+    if os.path.isfile(file_path):
+        try:
+            data = json.loads(open_and_read(file_path))
+        except:
+            data = None
+    if data:
+        return data
+    meta = tvData.query.filter_by(mid=mid).first()
+    if not meta:
+        return None
+    data_js = {
+        "movie_name": meta.moviedisplay,
+        "thumbnail": meta.thumb,
+        "episodes": meta.episodes,
+        "episode_meta": len(meta.episodes),
+        "season": meta.season,
+    }
+    open_and_write(file_path, "w", data=json.dumps(data_js))
+    return data_js
 
 
 def get_all_results(req_if_not_heroku=True, number=0, shuffle=True, url=None):
     db_cache_file = os.path.join(app.root_path, ".db-cache--all")
-    jsdata = __data__ = []
+    jsdata = show_data = []
     data = None
     if os.path.isfile(db_cache_file):
         _data = open_and_read(db_cache_file)
         try:
             data = json.loads(_data).get("data").get("movies")
-            __data__ = data
+            show_data = data
         except Exception as e:
             print(e)
     elif is_heroku(str(url)) or (not is_heroku(str(url)) and req_if_not_heroku):
@@ -155,14 +124,14 @@ def get_all_results(req_if_not_heroku=True, number=0, shuffle=True, url=None):
             )
         _meta = json.dumps({"stamp": time.time(), "data": {"movies": jsdata}})
         open_and_write(db_cache_file, "w", _meta)
-        __data__ = jsdata
+        show_data = jsdata
     else:
         return []
     if number:
-        return random.choices(__data__, k=number)
+        return random.choices(show_data, k=number)
     if shuffle:
-        random.shuffle(__data__)
-        return __data__
+        random.shuffle(show_data)
+        return show_data
 
 
 def generate_id() -> str:
@@ -171,7 +140,7 @@ def generate_id() -> str:
 
 
 def gen_rn() -> int:
-    return random.randint(10, 17)
+    return random.randint(12, 17)
 
 
 def is_heroku(url):
@@ -257,85 +226,58 @@ async def check__():
 
 @app.route("/")
 async def index():
-    if session.get("req-data"):
-        d = "Thanks for helping us out!"
-    else:
-        d = " "
-    return parse_local_assets(await render_template("index.html", msg=d))
-
-
-@app.route("/report/")
-async def report_dead():
-    m_id = request.args.get("id")
-    if m_id is None:
-        return "No movie id specified"
-    meta_ = tvData.query.filter_by(mid=m_id).first()
-    if meta_ is None:
-        return "No movie associated with given id"
-    thumb = meta_.thumb
-    title = meta_.moviedisplay
-    return parse_local_assets(
-        await render_template("link-report.html", m_id=m_id, title=title, thumb=thumb)
-    )
-
-
-@app.route("/submit/report/", methods=["POST"])
-async def parse_report():
-    try:
-        form = await request.form
-        mid = form["id"]
-        col = deadLinks(mid)
-        # pylint: disable=E1101
-        db.session.add(col)
-        db.session.commit()
-        # pylint: enable=E1101
-        return "Response recorded.Thank You for your help!"
-    except Exception as e:
-        print(e)
-        return "An unknown error occured during processing your request"
-    # raise e
-
-
-@app.route("/search")
-async def send_m():
-    if request.args.get("q") is None or not re.sub(
-        r"([^\w]|_)", "", request.args.get("q")
-    ):
-        return "Specify a term!"
-    q = request.args.get("q")
-
-    return parse_local_assets(await render_template("movies.html", q=q))
-
-
-@app.route("/help-us/")
-async def ask_get():
-    return parse_local_assets(await render_template("help.html"))
-
-
-@app.route("/db-manage/parse-requests/", methods=["POST"])
-async def get_s():
-    _movie = await request.form
-    movie = _movie.get("movie")
-    if not re.sub(r"([^\w]|_)", "", movie):
-        print("No movie Given")
-        return "Please mention the movie"
-    url = _movie.get("url")
-    data = (movie, url)
-    a = req_db(data)
-    print(a)
-    return redirect("/", status_code=301)
-
-
-@app.route("/googlef06ee521abc7bdf8.html")
-async def google_():
-    return "google-site-verification: googlef06ee521abc7bdf8.html"
+    if is_heroku(request.url):
+        return redirect("https://tv.pycode.tk/", status_code=301)
+    return "test"
 
 
 def movie_list_sort(md: tvData) -> str:
     return md.movie
 
+@app.route("/api/get-integrity/", methods=["POST"])
+async def get_integrity_token():
+    data: dict = await request.get_json()
+    if data.get("$"):
+        if session.get("nonce") != data.get("integrity"):
+            print("Err")
+    idx: str = generate_id()
+    session["nonce"] = idx
+    return Response(json.dumps({"token": idx}))
 
-@app.route("/data/search/", methods=["POST"])
+
+@app.route("/api/get-all/", methods=["POST"])
+async def get_all_results_api():
+    jsdata = await request.get_json()
+    if jsdata.get("token") != session.get("nonce"):
+        return Response(json.dumps({"error": "no"}), content_type=json_ctype)
+    movs = get_all_results(shuffle=True, url=request.url)
+    data = {"movies": movs}
+    return Response(json.dumps(data), content_type=json_ctype)
+
+
+@app.route("/api/get-show-metadata/", methods=["POST"])
+async def get_show_meta():
+    data = await request.get_json()
+    idx = data.get("id")
+    token = data.get("token")
+    print(token, session)
+    if token != session.get("nonce"):
+        return Response(json.dumps({"error": "bad-key"}), content_type=json_ctype)
+    meta = from_cache_or_save(idx)
+    if not meta:
+        return Response(json.dumps({"error": "404"}), content_type=json_ctype)
+    return Response(
+        json.dumps(
+            {
+                "movie_name": meta.get("movie_name"),
+                "episode_meta": meta.get("episode_meta"),
+            }
+        ),
+        content_type=json_ctype,
+    )
+
+
+@app.route("/api/data/search/", methods=["POST"])
 async def serchs():
     json_data = {}
     form = await request.form
@@ -352,269 +294,87 @@ async def serchs():
         )
     if len(json_data["movies"]) == 0:
         return json.dumps({"no-res": True})
-    return Response(json.dumps(json_data), content_type="application/json")
-
-
-@app.route("/error-configs/")
-async def err_configs():
-    return await render_template("err.html")
-
-
-@app.route("/all/")
-async def all_movies():
-    session["req-all"] = (generate_id() + generate_id())[:20]
-    return parse_local_assets(
-        await render_template("all.html", data=session["req-all"])
-    )
-
-
-@app.route("/fetch-token/configs/", methods=["POST"])
-async def gen_conf():
-    _data = await request.form
-    data = _data["data"]
-    rns = _data["rns"]
-    if data != session["req-all"]:
-        return "lol"
-    session["req-all"] = (generate_id() + rns + generate_id())[:20]
-    return Response(
-        json.dumps({"id": session["req-all"], "rns": rns}),
-        content_type="application/json",
-    )
-
-
-@app.route("/data/specs/", methods=["POST"])
-async def get_all():
-    json_data = {}
-    _forms = await request.form
-    forms = _forms["q"]
-    json_data["movies"] = []
-    if session["req-all"] != forms:
-        return "!cool"
-    movs = get_all_results(shuffle=True, url=request.url)
-    json_data["movies"] = movs
-    res = await make_response(json.dumps(json_data))
-    res.headers["X-Sent-Cached"] = str(False)
-    return res
-
-
-@app.route("/fetch-token/links/post/", methods=["POST"])
-async def s_confs():
-    _data = await request.form
-    data = _data["data"]
-    if data != session["req-all"]:
-        return "No"
-    session["req-all"] = (generate_id() + generate_id())[:20]
-    return Response(
-        json.dumps({"id": session["req-all"]}), content_type="application/json"
-    )
-
-
-@app.route("/movie/<mid>/<mdata>/")
-async def send_movie(mid, mdata):
-    if mid is None:
-        return "Nope"
-    session["req_nonce"] = generate_id()
-    if not os.path.isdir(".player-cache"):
-        os.mkdir(".player-cache")
-    if os.path.isfile(os.path.join(".player-cache", mid + ".json")):
-        with open(os.path.join(".player-cache", mid + ".json"), "r") as f:
-            try:
-                data = json.loads(f.read())
-                res = await make_response(
-                    parse_local_assets(
-                        await render_template(
-                            "player.html",
-                            nonce=session["req_nonce"],
-                            movie=data["movie_name"],
-                            og_url=request.url,
-                            og_image=data["thumbnail"],
-                        )
-                    )
-                )
-                res.headers["X-Sent-Cached"] = str(True)
-                print("Sending Cached Data")
-                return res
-            except:
-                pass
-    meta_ = tvData.query.filter_by(mid=mid).first()
-    if meta_ is None:
-        return "No movie associated with given id"
-    movie_name = meta_.moviedisplay
-    thumbnail = meta_.thumb
-    with open(os.path.join(".player-cache", mid + ".json"), "w") as f:
-        data_js = {
-            "movie_name": movie_name,
-            "thumbnail": thumbnail,
-            "episodes": meta_.episodes,
-            "episode_meta": len(meta_.episodes),
-            "season": meta_.season,
-        }
-        f.write(json.dumps(data_js))
-    res = await make_response(
-        parse_local_assets(
-            await render_template(
-                "player.html",
-                nonce=session["req_nonce"],
-                movie=movie_name,
-                og_url=request.url,
-                og_image=thumbnail,
-            )
-        )
-    )
-    res.headers["X-Sent-Cached"] = str(False)
-    return res
-
-
+    return Response(json.dumps(json_data), content_type=json_ctype)
 @app.route("/favicon.ico")
 async def send_fav():
     return await send_from_directory(
         os.path.join(app.root_path, "static"), "favicon.ico"
     )
 
-
-@app.route("/data-parser/plugins/player/", methods=["POST"])
-async def plugin():
-    _mid = await request.form
-    print(_mid)
-    mid = _mid["id"]
-    if _mid["nonce"] != session["req_nonce"]:
-        return "Lol"
-    nonce = generate_id()
-    session["req_nonce"] = nonce
-    if os.path.isdir(".player-cache"):
-        if os.path.isfile(os.path.join(".player-cache", mid + ".json")):
-            with open(os.path.join(".player-cache", mid + ".json"), "r") as f:
-                try:
-                    data = json.loads(f.read())
-                    json_data = {
-                        "season": data["season"],
-                        "episode_meta": data["episode_meta"],
-                        "tempid": nonce,
-                        "utf-8": "✓",
-                        "movie_name": data["movie_name"],
-                    }
-                    res = await make_response(json.dumps(json_data))
-                    res.headers["Content-Type"] = "application/json"
-                    res.headers["X-Sent-Cached"] = str(True)
-                    print("Sending Cached Data")
-                    return res
-                except:
-                    pass
-    else:
-        os.mkdir(".player-cache")
-    data = tvData.query.filter_by(mid=mid).first()
-    print(mid, data)
-    common_ = {
-        "season": data.season,
-        "episode_meta": len(data.episodes),
-        "movie_name": data.moviedisplay,
-    }
-    meta_data = {**common_, "episodes": data.episodes, "thumbnail": data.thumbnail}
-    json_data = json.dumps({**common_, "tempid": nonce, "utf-8": "✓"})
-    with open(os.path.join(".player-cache", mid + ".json"), "w") as f:
-        f.write(json.dumps(meta_data))
-    res = await make_response(json_data)
-    res.headers["X-Sent-Cached"] = str(False)
-    res.headers["Content-Type"] = "application/json"
-    return res
-
-
-@app.route("/build-player/ep/", methods=["POST"])
+@app.route("/api/build-player/ep/", methods=["POST"])
 async def send_ep_data():
-    eeid = await request.form
-    eid = eeid["eid"]
-    if eeid["nonce"] != session["req_nonce"]:
-        return "LuL"
+    eeid = await request.get_json()
+    eid = str(eeid["eid"])
+    if eeid["nonce"] != session["nonce"]:
+        return Response(json.dumps({"error": "no key"}), content_type=json_ctype)
     episode = eeid["mid"]
-    if os.path.isdir(".player-cache") and os.path.isfile(
-        os.path.join(".player-cache", episode + ".json")
-    ):
-        with open(os.path.join(".player-cache", episode + ".json"), "r") as f:
-            try:
-                data = json.loads(f.read())
-                episodes = data["episodes"]
-                print("Cached Response")
-                header = True
-            except:
-                pass
-    else:
-        header = False
-        data = tvData.query.filter_by(mid=episode).first()
-        episodes = data.episodes
+    data = from_cache_or_save(episode)
+    if not data:
+        return Response(json.dumps({"error": "no-eps"}))
+    episodes = data.get("episodes")
     urls = episodes.get(int(eid)) or episodes.get(eid)
     json_data = {
-        "url": str(urls[0]).replace("http:", "https:"),
-        "alt1": str(urls[1]).replace("http:", "https:"),
-        "alt2": str(urls[2]).replace("http:", "https:"),
+        "url": str(urls[0]).replace("http:", "https:") if urls[0] else None,
+        "alt1": str(urls[1]).replace("http:", "https:") if urls[1] else None,
+        "alt2": str(urls[2]).replace("http:", "https:") if urls[2] else None,
     }
     res = await make_response(json.dumps(json_data))
-    res.headers["Content-Type"] = "application/json"
-    res.headers["X-Sent-Cached"] = str(header)
+    res.headers["Content-Type"] = json_ctype
     return res
-
-
-@app.route("/no-result/")
-async def b404():
-    return await render_template("no-result.html")
-
-
-@app.route("/media/add/")
-async def add_show():
-    return parse_local_assets(await render_template("shows-add.html"))
 
 
 @app.route("/media/add-shows/fetch/")
 async def search_shows():
     show = request.args.get("s")
-    return Response(ippl_api.main_(term=show), content_type="application/json")
+    return Response(ippl_api.main_(term=show), content_type=json_ctype)
+
+
+@app.after_request
+async def resp_headers(resp):
+    if "localhost" in request.headers.get("origin", ""):
+        resp.headers["access-control-allow-origin"] = request.headers["origin"]
+    else:
+        resp.headers["access-control-allow-origin"] = "https://tv.pycode.tk"
+    resp.headers["Access-Control-Allow-Headers"] = request.headers.get(
+        "Access-Control-Request-Headers", "*"
+    )
+    resp.headers["access-control-allow-credentials"] = "true"
+    return resp
+
+
+@app.route("/i/rec/")
+async def recommend():
+    # __import__("time").sleep(5)
+    data = get_all_results(False, number=5, shuffle=False, url=request.url)
+    rec = json.dumps({"recommendations": data})
+    return Response(rec, content_type=json_ctype)
 
 
 @app.websocket("/suggestqueries")
 async def socket_conn():
-    start_time = time.time()
+    sort_dict = lambda x: x.get("movie")
     while 1:
-        query = await websocket.receive()
-        if (time.time() - start_time) >= 300:
-            print("E")
-            await websocket.send(
-                json.dumps(
-                    {
-                        "data": [
-                            {
-                                "timeout": True,
-                                "movie": "Please Refresh Your Browser..connection timed out",
-                                "id": "_",
-                                "thumbnail": "no",
-                            }
-                        ]
-                    }
-                )
-            )
-            return
+        _query: str = await websocket.receive()
+        query = re.escape(re.sub(r"([^\w]|_)", "", _query).lower())
+        if not query:
+            await websocket.send(json.dumps({"no-res": True}))
+            continue
         json_data = {"data": []}
-        __f = False
-        print(websocket.url)
+        req_if_heroku: bool = False
         if is_heroku(websocket.url):
-
-            __f = True
-        names = get_all_results(req_if_not_heroku=__f, url=websocket.url)
-        json_data["data"] = [
-            s
-            for s in names
-            if re.search(r".*?%s" % (re.escape(query)), s["movie"], re.IGNORECASE)
-        ]
-        if len(json_data["data"]) == 0:
+            req_if_heroku = True
+        names: list = get_all_results(
+            req_if_not_heroku=req_if_heroku, url=websocket.url
+        )
+        json_data["data"] = [s for s in names if re.search(query, s["moviename"])]
+        if not len(json_data["data"]):
             await websocket.send(json.dumps({"no-res": True}))
         else:
             json_data["data"].sort(key=sort_dict)
-            await websocket.send(json.dumps({**json_data, "cached": "undefined"}))
+            await websocket.send(json.dumps(json_data))
 
 
-def sort_dict(el, key="movie"):
-    return el.get(key)
-
-
-@app.route("/add/tv-show/lookup")
+@app.route("/api/add/tv-show/lookup")
 async def add_show_lookup():
     _show_url = request.args.get("s")
     title = request.args.get("t", "")
@@ -627,48 +387,14 @@ async def add_show_lookup():
         )
     thread = threading.Thread(target=ippl_api.get_, args=(_show_url, title))
     thread.start()
-    return parse_local_assets(
-        await render_template("shows_add_evt.html", show_url=_show_url, show=title)
-    )
+    return f"Adding {title}"
 
 
-@app.route("/sec/add/", methods=["POST"])
-async def add_():
-    try:
-        _data = await request.form
-        data = _data["lists"]
-        if _data["pw"] != os.environ.get("_pass_"):
-            return "No"
-        data = json.loads(data)
-        title = data["title"]
-        thumb = data["thumb"]
-        season = data["season"]
-        episodes = data["episodes"]
-        col = tvData(title, thumb, season, episodes)
-        # pylint: disable=E1101
-        db.session.add(col)
-        db.session.commit()
-        # pylint: enable=E1101
-        print(col)
-        return str(col)
-    except Exception as e:
-        print(e)
-        return "Malformed Input" + str(e)
 
-
-@app.route("/out")
-async def redir():
-    site = session.get("site-select")
-    url = request.args.get("url")
-    title = request.args.get("title", "TV Show")
-    if url.startswith("//"):
-        url = "https:" + url
-    return (
-        parse_local_assets(
-            await render_template("sites.html", url=url, site=site, title=title)
-        ),
-        300,
-    )
+@app.route("/api/site-select/")
+async def redir_data():
+    site = session.get("site-select", "None")
+    return Response(json.dumps({"site": site}), content_type=json_ctype)
 
 
 @app.route("/set-downloader/")
@@ -677,59 +403,8 @@ async def set_dl():
     return redirect(session["site-select"], status_code=301)
 
 
-@app.route("/admin/", methods=["POST", "GET"])
-async def randomstuff():
-    pw = app.secret_key
-    if request.method == "GET":
-        return parse_local_assets(await render_template("admin.html"))
-    else:
-        if not is_heroku(request.url):
-            print("Local")
-            session["admin-auth"] = True
-            resp = 1
-        else:
-            if session.get("admin-auth"):
-                return Response(json.dumps({"response": -1}))
-            form = await request.form
-            _pass = form["pass"]
-            session["admin-auth"] = _pass == pw
-            if not session["admin-auth"]:
-                resp = "0"
-            else:
-                resp = "1"
-    return Response(json.dumps({"response": resp}), content_type="application/json")
-
-
-@app.route("/admin/get-data/", methods=["POST"])
-async def see_data():
-    if not session.get("admin-auth"):
-        print("no auth")
-        return Response(json.dumps({}))
-    _ = ("search", "moviewatch", "recommend", "movieclick")
-    form = await request.form
-    _type_ = form["type"].lower()
-    _filter = [s.actions for s in DataLytics.query.filter_by(_type=_type_).all()]
-    data = {"result": _filter}
-    print(data)
-    return Response(json.dumps(data), content_type="application/json")
-
-
 @app.route("/collect/", methods=["POST", "GET"])
 async def collect():
-    if request.method == "POST":
-        _data = await request.data
-        data = json.loads(_data.decode())
-    else:
-        data = dict(request.args)
-    if not is_heroku(request.url):
-        print("Local Env")
-        print(data)
-        return ""
-    col = DataLytics(data["type"].lower(), data["main"])
-    # pylint: disable=E1101
-    db.session.add(col)
-    db.session.commit()
-    # pylint: enable=E1101
     return ""
 
 
@@ -742,7 +417,10 @@ async def bcontest():
 # for heroku nginx
 @app.before_serving
 def open_to_nginx():
-    open("/tmp/app-initialized", "w").close()
+    try:
+        open("/tmp/app-initialized", "w").close()
+    except:
+        pass
 
 
 if __name__ == "__main__":
