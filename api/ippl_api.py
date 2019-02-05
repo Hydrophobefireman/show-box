@@ -243,6 +243,7 @@ def get_(url, title, v=True, n=1, season=0):
             else:
                 print(colors.BOLD + "[info]" + colors.ENDC + "Stopping Execution")
                 continue
+        data = [i for i in filter(val_url, data)]
         while len(data) > 3:
             p_print(data)
             dt_n = input(
@@ -311,6 +312,13 @@ def to_screen(data, v):
         print(*data)
     else:
         return
+
+
+def val_url(url):
+    u = urlp_(url)
+    return re.search(
+        r"openload|streamango|estream|vidzi|megadrive|yourupload", u.netloc
+    )
 
 
 if __name__ == "__main__":
