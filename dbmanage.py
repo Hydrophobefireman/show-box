@@ -3,8 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import sys
 
 
-def add_to_db(data: tuple) -> str:
-    from get import db, tvData
+def add_to_db(data: tuple,db,tvData) -> str:
 
     assert isinstance(data, tuple) and len(data) == 4
     col = tvData(*data)

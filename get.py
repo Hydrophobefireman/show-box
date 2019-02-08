@@ -28,7 +28,7 @@ from quart import (
 )
 
 try:
-    from api import ippl_api
+    import api.ippl_api as ippl_api
 except ImportError:
     pass
 from dbmanage import req_db
@@ -234,6 +234,7 @@ async def index():
 def movie_list_sort(md: tvData) -> str:
     return md.movie
 
+
 @app.route("/api/get-integrity/", methods=["POST"])
 async def get_integrity_token():
     data: dict = await request.get_json()
@@ -295,11 +296,14 @@ async def serchs():
     if len(json_data["movies"]) == 0:
         return json.dumps({"no-res": True})
     return Response(json.dumps(json_data), content_type=json_ctype)
+
+
 @app.route("/favicon.ico")
 async def send_fav():
     return await send_from_directory(
         os.path.join(app.root_path, "static"), "favicon.ico"
     )
+
 
 @app.route("/api/build-player/ep/", methods=["POST"])
 async def send_ep_data():
@@ -385,10 +389,11 @@ async def add_show_lookup():
             "We already have a show with similar name..to prevent multiple copies of the same show..please request this show to be manually added",
             403,
         )
-    thread = threading.Thread(target=ippl_api.get_, args=(_show_url, title))
+    thread = threading.Thread(
+        target=ippl_api.get_, args=(_show_url, title, True, 1, 0, db, tvData)
+    )
     thread.start()
     return f"Adding {title}"
-
 
 
 @app.route("/api/site-select/")

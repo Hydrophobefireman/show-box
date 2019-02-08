@@ -64,7 +64,7 @@ def main_(term: str = None, s_url: str = None):
     return json.dumps(ret_data)
 
 
-def get_(url, title, v=True, n=1, season=0):
+def get_(url, title, v=True, n=1, season=0, DBI=None, MDI=None):
     reg = re.search(r"-\s*?S(\d+)", title)
     url = base64.b64decode(codecs.encode(url[::-1], "rot13").encode()).decode()
     print("[debug]url:", url)
@@ -287,7 +287,7 @@ def get_(url, title, v=True, n=1, season=0):
     yn = "y"
     if yn == "y":
         print(colors.BOLD + "[info]" + colors.ENDC + "Adding to database:")
-        print(dbmanage.add_to_db(base_template))
+        print(dbmanage.add_to_db(base_template, DBI, MDI))
     else:
         print(colors.BOLD + "[info]" + colors.ENDC + "Returning Values Only")
     print("Done")

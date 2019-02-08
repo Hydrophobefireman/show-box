@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup as bs
 
 import dbmanage
 import upload
+from get import tvData, db
 
 
 class colors:
@@ -242,7 +243,7 @@ def get_(url: str, v: bool = True, n: int = 1, season: int = 0) -> None:
     yn = "y"
     if yn == "y":
         print(colors.BOLD + "[info]" + colors.ENDC + "Adding to database:")
-        print(dbmanage.add_to_db(base_template))
+        print(dbmanage.add_to_db(base_template, db, tvData))
     else:
         print(colors.BOLD + "[info]" + colors.ENDC + "Returning Values Only")
     print("Done")
