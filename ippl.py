@@ -223,7 +223,7 @@ def get_(url: str, v: bool = True, n: int = 1, season: int = 0) -> None:
             if len(c) < 5:
                 c = None
             data = [a, b, c]
-        episode_data = {**episode_data, i: data}
+        episode_data[i] = data
         to_screen([colors.OKBLUE + "[debug]" + colors.ENDC + "Episode Data"], v)
         dict_print(episode_data, v)
     to_screen(

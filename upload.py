@@ -3,12 +3,11 @@ import os
 
 import set_env
 
-set_env.set_env_vars()
-
 
 def upload(imgurl: str) -> dict:
+    set_env.set_env_vars()
     clapi_key = os.environ.get("clapi_key")
-    clapi_secret = os.environ.get("cl_secret")
+    clapi_secret = os.environ.get("clapi_secret")
     if clapi_key is None:
         raise Exception("no key provided")
     cloudinary.config(

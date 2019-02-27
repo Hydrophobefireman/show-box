@@ -40,6 +40,8 @@ app = Quart(__name__)
 app.config["FORCE_HTTPS_ON_PROD"] = True
 app.secret_key = os.environ.get("db_pass_insig")
 
+sanitize_str = lambda movie: re.sub(r"([^\w]|_)", "", movie).lower()
+
 
 def open_and_read(fn: str, mode: str = "r", strip: bool = True):
     with open(fn, mode) as f:
@@ -167,7 +169,7 @@ class tvData(db.Model):
         self.mid = generate_id()
         self.season = season
         self.episodes = episodes
-        self.movie = re.sub(r"([^\w]|_)", "", movie.lower())
+        self.movie = sanitize_str(movie)
         self.moviedisplay = movie
         self.thumb = thumb
 
@@ -283,7 +285,7 @@ async def serchs():
     json_data = {}
     form = await request.form
     json_data["movies"] = []
-    q = re.sub(r"([^\w]|_)", "", form["q"]).lower()
+    q = sanitize_str(form["q"])
     print("Search For:", q)
     urls = tvData.query.filter(
         tvData.movie.op("~")(r"(?s).*?%s" % (re.escape(q)))
@@ -359,7 +361,7 @@ async def socket_conn():
     sort_dict = lambda x: x.get("movie")
     while 1:
         _query: str = await websocket.receive()
-        query = re.escape(re.sub(r"([^\w]|_)", "", _query).lower())
+        query = re.escape(sanitize_str(_query))
         if not query:
             await websocket.send(json.dumps({"no-res": True}))
             continue
@@ -382,7 +384,7 @@ async def socket_conn():
 async def add_show_lookup():
     _show_url = request.args.get("s")
     title = request.args.get("t", "")
-    q = re.sub(r"([^\w]|_)", "", title).lower()
+    q = sanitize_str(title)
     urls = tvData.query.filter(tvData.movie.op("~")(r"(?s).*?%s" % (q))).all()
     if len(urls) > 0:
         return (
@@ -430,3 +432,4 @@ def open_to_nginx():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, use_reloader=True)
+
