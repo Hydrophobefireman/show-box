@@ -286,6 +286,8 @@ async def serchs():
     form = await request.form
     json_data["movies"] = []
     q = sanitize_str(form["q"])
+    if not q:
+        return json.dumps({"no-res": True})
     print("Search For:", q)
     urls = tvData.query.filter(
         tvData.movie.op("~")(r"(?s).*?%s" % (re.escape(q)))
