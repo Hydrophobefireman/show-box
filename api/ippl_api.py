@@ -41,7 +41,7 @@ def main_(term: str = None, s_url: str = None):
     if s_url is None:
         if term is None:
             return "No term Supplied"
-        url = "https://www5.solarmoviesc.com/search/%s.html" % (quote(term))
+        url = "https://solarmoviesonline.net/search/%s.html" % (quote(term))
     else:
         url = s_url
     ua = "Mozilla/5.0 (Windows; U; Windows NT 10.0; en-US) AppleWebKit/604.1.38 (KHTML, like Gecko) Chrome/68.0.3325.162"
