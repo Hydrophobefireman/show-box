@@ -112,7 +112,7 @@ def get_all_results(req_if_not_heroku=True, number=0, shuffle=True, url=None):
             show_data = data
         except Exception as e:
             print(e)
-    elif is_heroku(str(url)) or (not is_heroku(str(url)) and req_if_not_heroku):
+    elif True:
         print("Fetching Data")
         _data = tvData.query.all()
         for url in _data:
@@ -237,26 +237,11 @@ def movie_list_sort(md: tvData) -> str:
     return md.movie
 
 
-@app.route("/api/get-integrity/", methods=["POST"])
-async def get_integrity_token():
-    data: dict = await request.get_json()
-    if data.get("$"):
-        if session.get("nonce") != data.get("integrity"):
-            print("Err")
-    idx: str = generate_id()
-    session["nonce"] = idx
-    return Response(json.dumps({"token": idx}))
-
-
 @app.route("/api/get-all/", methods=["POST"])
 async def get_all_results_api():
-    jsdata = await request.get_json()
-    if jsdata.get("token") != session.get("nonce"):
-        return Response(json.dumps({"error": "no"}), content_type=json_ctype)
     movs = get_all_results(shuffle=True, url=request.url)
     data = {"movies": movs}
     return Response(json.dumps(data), content_type=json_ctype)
-
 
 @app.route("/api/get-show-metadata/", methods=["POST"])
 async def get_show_meta():
@@ -313,8 +298,6 @@ async def send_fav():
 async def send_ep_data():
     eeid = await request.get_json()
     eid = str(eeid["eid"])
-    if eeid["nonce"] != session["nonce"]:
-        return Response(json.dumps({"error": "no key"}), content_type=json_ctype)
     episode = eeid["mid"]
     data = from_cache_or_save(episode)
     if not data:
