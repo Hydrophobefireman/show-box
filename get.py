@@ -243,15 +243,12 @@ async def get_all_results_api():
     data = {"movies": movs}
     return Response(json.dumps(data), content_type=json_ctype)
 
+
 @app.route("/api/get-show-metadata/", methods=["POST"])
 async def get_show_meta():
     data = await request.get_json()
     idx = data.get("id")
-    token = data.get("token")
-    print(token, session)
-    if token != session.get("nonce"):
-        return Response(json.dumps({"error": "bad-key"}), content_type=json_ctype)
-    meta = from_cache_or_save(idx)
+    meta = from_cache_or_save(idx) if idx else None
     if not meta:
         return Response(json.dumps({"error": "404"}), content_type=json_ctype)
     return Response(
